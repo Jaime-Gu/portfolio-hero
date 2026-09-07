@@ -25,6 +25,7 @@
     uniform vec2 uRes;      // canvas size in px
     uniform vec2 uImgRes;   // image size in px
     uniform vec2 uPoints[50]; // cursor + trailing chain, px, origin bottom-left
+    uniform vec2 uMotion;   // cursor velocity in uv units (directional blur)
     uniform float uGlow;    // 0..1 halo strength
     uniform float uTime;
 
@@ -40,7 +41,7 @@
       return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
     }
 
-    // 9-tap gaussian blur with adjustable radius (px units)
+    // 9-tap gaussian blur + directional motion blur along cursor velocity
     vec3 blurTex(vec2 uv, vec2 off, float radius) {
       vec2 px = radius / uImgRes;
       vec3 c = texture2D(uTex, uv + off).rgb * 4.0;
@@ -52,14 +53,18 @@
       c += texture2D(uTex, uv + off + vec2(-px.x,  px.y)).rgb;
       c += texture2D(uTex, uv + off + vec2( px.x, -px.y)).rgb;
       c += texture2D(uTex, uv + off + vec2(-px.x, -px.y)).rgb;
-      return c / 16.0;
+      c += texture2D(uTex, uv + off + uMotion).rgb;
+      c += texture2D(uTex, uv + off - uMotion).rgb;
+      c += texture2D(uTex, uv + off + uMotion * 0.5).rgb;
+      c += texture2D(uTex, uv + off - uMotion * 0.5).rgb;
+      return c / 20.0;
     }
 
     void main() {
       vec2 frag = vUv * uRes;
 
       // halo: continuous streak from a chain of trailing points (no layers)
-      float R = 0.2304;                            // halo radius (× screen height)
+      float R = 0.265;                             // halo radius (× screen height)
       float glow = 0.0;
       vec2 dirField = vec2(0.0);
       float dm = 1e9;
@@ -84,9 +89,9 @@
       // chromatic sampling on the refracted edge
       float ca = glow * 0.006;
       vec3 soft, sharp;
-      soft.r  = blurTex(uv, -refr - vec2(ca, 0.0), 4.0).r;
-      soft.g  = blurTex(uv, -refr, 4.0).g;
-      soft.b  = blurTex(uv, -refr + vec2(ca, 0.0), 4.0).b;
+      soft.r  = blurTex(uv, -refr - vec2(ca, 0.0), 4.4).r;
+      soft.g  = blurTex(uv, -refr, 4.4).g;
+      soft.b  = blurTex(uv, -refr + vec2(ca, 0.0), 4.4).b;
       sharp.r = texture2D(uTex, uv - refr - vec2(ca, 0.0)).r;
       sharp.g = texture2D(uTex, uv - refr).g;
       sharp.b = texture2D(uTex, uv - refr + vec2(ca, 0.0)).b;
@@ -96,12 +101,21 @@
       float warm = smoothstep(0.02, 0.18, soft.r - soft.b);
       vec3 col = mix(soft, sharp, warm * 0.85);
       float lum = dot(col, vec3(0.299, 0.587, 0.114));
-      col = mix(vec3(lum), col, mix(0.55, 1.45, warm));
+      col = mix(vec3(lum), col, mix(0.396, 1.044, warm)); // global saturation -30%
       col *= mix(0.96, 1.06, warm);
 
       // soft screen-blend light, slightly warm
       vec3 light = vec3(1.0, 0.97, 0.90) * glow;
       col = 1.0 - (1.0 - col) * (1.0 - light);
+
+      // color shift inside the halo: chroma mirrored around luminance
+      // (warm ↔ cool, brightness preserved) — striking but easy on the eyes
+      float inv = clamp(glow * 2.2, 0.0, 1.0);
+      inv = inv * inv * (3.0 - 2.0 * inv);
+      float lumA = dot(col, vec3(0.299, 0.587, 0.114));
+      vec3 shifted = clamp(2.0 * lumA - col, 0.0, 1.0);
+      shifted = mix(vec3(lumA), shifted, 0.9);      // slight desat to soften
+      col = mix(col, shifted, inv);
 
       // vignette
       float vig = smoothstep(1.25, 0.45, length(vUv - 0.5));
@@ -139,7 +153,7 @@
   gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
   const U = {};
-  for (const name of ['uTex', 'uRes', 'uImgRes', 'uGlow', 'uTime']) {
+  for (const name of ['uTex', 'uRes', 'uImgRes', 'uGlow', 'uTime', 'uMotion']) {
     U[name] = gl.getUniformLocation(prog, name);
   }
   U.uPoints = gl.getUniformLocation(prog, 'uPoints[0]');
@@ -154,6 +168,9 @@
   let glowTarget = 0;
   let lastX = 0, lastY = 0, lastT = performance.now();
   let started = false;
+  let motionX = 0, motionY = 0;        // smoothed cursor velocity (css px/frame)
+  let prevHX = 0, prevHY = 0;          // previous chain-head position
+  let forcedMotion = null;             // debug override
 
   function resize() {
     DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -189,6 +206,9 @@
       p.y = mouse.y + (ty - mouse.y) * k;
     });
     frozen = q.has('tx');   // keep the simulated streak in place
+    if (q.has('vx') || q.has('vy')) {
+      forcedMotion = { x: parseFloat(q.get('vx') || '0'), y: parseFloat(q.get('vy') || '0') };
+    }
     glow = glowTarget = parseFloat(q.get('g') || '0.9');
   }
 
@@ -246,6 +266,17 @@
       ptsFlat[i * 2 + 1] = H - pts[i].y * DPR;
     }
 
+    // smoothed cursor velocity → directional motion blur (uv units)
+    const vx = forcedMotion ? forcedMotion.x : pts[0].x - prevHX;
+    const vy = forcedMotion ? forcedMotion.y : pts[0].y - prevHY;
+    prevHX = pts[0].x; prevHY = pts[0].y;
+    motionX += (vx - motionX) * 0.12;
+    motionY += (vy - motionY) * 0.12;
+    let mx = (motionX * DPR / W) * 0.08;
+    let my = -(motionY * DPR / H) * 0.08;   // y flip: css → gl coords
+    const mlen = Math.hypot(mx, my);
+    if (mlen > 0.012) { mx *= 0.012 / mlen; my *= 0.012 / mlen; }
+
     // glow: fast attack, very slow disperse; gentle breathing when idle
     if (!pinned) {
       glowTarget *= 0.996;
@@ -257,6 +288,7 @@
     gl.uniform2f(U.uRes, W, H);
     gl.uniform2f(U.uImgRes, imgW, imgH);
     gl.uniform2fv(U.uPoints, ptsFlat);
+    gl.uniform2f(U.uMotion, mx, my);
     gl.uniform1f(U.uGlow, glow);
     gl.uniform1f(U.uTime, t);
 
