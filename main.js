@@ -59,7 +59,7 @@
       vec2 frag = vUv * uRes;
 
       // halo: continuous streak from a chain of trailing points (no layers)
-      float R = 0.192;                             // halo radius (× screen height)
+      float R = 0.2304;                            // halo radius (× screen height)
       float glow = 0.0;
       vec2 dirField = vec2(0.0);
       float dm = 1e9;
