@@ -24,7 +24,7 @@
     uniform sampler2D uTex;
     uniform vec2 uRes;      // canvas size in px
     uniform vec2 uImgRes;   // image size in px
-    uniform vec2 uPoints[25]; // cursor + trailing chain, px, origin bottom-left
+    uniform vec2 uPoints[50]; // cursor + trailing chain, px, origin bottom-left
     uniform float uGlow;    // 0..1 halo strength
     uniform float uTime;
 
@@ -63,11 +63,12 @@
       float glow = 0.0;
       vec2 dirField = vec2(0.0);
       float dm = 1e9;
-      for (int i = 0; i < 25; i++) {
+      for (int i = 0; i < 50; i++) {
         vec2 dl = (frag - uPoints[i]) / uRes.y;
         float di = length(dl);
-        float gi = smoothstep(R, 0.0, di);
-        gi *= gi * (1.0 - float(i) * 0.025);       // fade along the tail
+        float Ri = R * (1.0 - float(i) * 0.014);    // radius shrinks along the tail
+        float gi = smoothstep(Ri, 0.0, di);
+        gi *= gi * (1.0 - float(i) * 0.012);        // brightness fades along the tail
         glow = max(glow, gi);
         dirField += dl * gi;
         dm = min(dm, di);
@@ -144,7 +145,7 @@
   U.uPoints = gl.getUniformLocation(prog, 'uPoints[0]');
 
   // --- state ---
-  const N = 25;
+  const N = 50;
   let W = 0, H = 0, DPR = 1;
   const mouse = { x: 0, y: 0 };        // raw, css px, origin top-left
   const pts = Array.from({ length: N }, () => ({ x: 0, y: 0 })); // follow-the-leader chain
@@ -233,11 +234,11 @@
     // follow-the-leader chain: each point chases the previous one,
     // so the glow forms a continuous streak along the cursor path
     if (!frozen) {
-      pts[0].x += (mouse.x - pts[0].x) * 0.25;
-      pts[0].y += (mouse.y - pts[0].y) * 0.25;
+      pts[0].x += (mouse.x - pts[0].x) * 0.45;
+      pts[0].y += (mouse.y - pts[0].y) * 0.45;
       for (let i = 1; i < N; i++) {
-        pts[i].x += (pts[i - 1].x - pts[i].x) * 0.25;
-        pts[i].y += (pts[i - 1].y - pts[i].y) * 0.25;
+        pts[i].x += (pts[i - 1].x - pts[i].x) * 0.45;
+        pts[i].y += (pts[i - 1].y - pts[i].y) * 0.45;
       }
     }
     for (let i = 0; i < N; i++) {
