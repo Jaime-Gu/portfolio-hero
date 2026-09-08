@@ -104,14 +104,21 @@
       col = mix(vec3(lum), col, mix(0.396, 1.044, warm)); // global saturation -30%
       col *= mix(0.96, 1.06, warm);
 
+      // background-only grade (fades out inside the halo):
+      // extra -10% saturation + 10% contrast
+      float haloM = clamp(glow * 2.2, 0.0, 1.0);
+      haloM = haloM * haloM * (3.0 - 2.0 * haloM);
+      vec3 bg = mix(vec3(lum), col, 0.9);
+      bg = clamp((bg - 0.5) * 1.1 + 0.5, 0.0, 1.0);
+      col = mix(bg, col, haloM);
+
       // soft screen-blend light, slightly warm
       vec3 light = vec3(1.0, 0.97, 0.90) * glow;
       col = 1.0 - (1.0 - col) * (1.0 - light);
 
       // color shift inside the halo: chroma mirrored around luminance
       // (warm ↔ cool, brightness preserved) — striking but easy on the eyes
-      float inv = clamp(glow * 2.2, 0.0, 1.0);
-      inv = inv * inv * (3.0 - 2.0 * inv);
+      float inv = haloM;
       float lumA = dot(col, vec3(0.299, 0.587, 0.114));
       vec3 shifted = clamp(2.0 * lumA - col, 0.0, 1.0);
       shifted = mix(vec3(lumA), shifted, 0.9);      // slight desat to soften
