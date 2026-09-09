@@ -96,6 +96,12 @@
       sharp.g = texture2D(uTex, uv - refr).g;
       sharp.b = texture2D(uTex, uv - refr + vec2(ca, 0.0)).b;
 
+      // cool cast: pull blue channel 40% toward red level (source stage,
+      // where the signal is still strong) — calms the blue-gray glass
+      float cool = smoothstep(0.0, 0.08, soft.b - soft.r);
+      soft.b  = mix(soft.b,  soft.r,  cool * 0.4);
+      sharp.b = mix(sharp.b, sharp.r, cool * 0.4);
+
       // emphasize warm (yellow / orange-red) blocks: sharp + saturated;
       // everything else stays blurred and desaturated
       float warm = smoothstep(0.02, 0.18, soft.r - soft.b);
@@ -256,6 +262,8 @@
   // --- loop ---
   const t0 = performance.now();
   function frame() {
+    // 封面移出文档流后停止渲染，避免空转
+    if (canvas.offsetParent === null) return;
     const t = (performance.now() - t0) / 1000;
 
     // follow-the-leader chain: each point chases the previous one,
