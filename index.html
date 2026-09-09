@@ -16,6 +16,9 @@
   <title>I'm Jaime</title>
   <meta name="description" content="Hi, I'm Jaime — software engineer. I love building delightful things for the web.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕶</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { overscroll-behavior: none; }
@@ -481,13 +484,12 @@
       position: absolute;
       right: 0.8rem;
       top: 50%;
-      transform: translateY(-50%);
+      transform: translateY(-50%) rotate(180deg);
       writing-mode: vertical-rl;
-      font-family: "Arial Narrow", "Helvetica Neue Condensed", "PingFang SC", sans-serif;
-      font-stretch: condensed;
+      font-family: "Bebas Neue", "Arial Narrow", sans-serif;
       font-size: clamp(2rem, 5.5vh, 2.75rem);
-      font-weight: 700;
-      letter-spacing: 0.2em;
+      font-weight: 400;
+      letter-spacing: 0.15em;
       white-space: nowrap;
       color: var(--fg);
       text-transform: uppercase;
@@ -504,9 +506,10 @@
     #site .socials a:hover { color: var(--accent-2); }
 
     /* 液态毛玻璃（kail 三件套：rgba(255,255,255,0.7) 亮描边 + 顶部内高光 + 低透明度软阴影；
-       覆盖卡片 / 按钮(.go) / 切换按钮(.theme-fab)；透明度 +20%，backdrop 统一 saturate(1.4)） */
+       覆盖卡片 / 按钮(.go) / 切换按钮(.theme-fab)；backdrop 统一 saturate(1.4)；阴影宽度已缩到 1/3） */
     [data-theme="dark"] #site .card, [data-theme="dark"] #site .post, [data-theme="dark"] #site .work-logo,
-    [data-theme="dark"] #site .blog-card, [data-theme="dark"] #site .fan-card,
+    [data-theme="dark"] #site .blog-card, [data-theme="dark"] #site .contact-panel, [data-theme="dark"] #site .c-btn,
+    [data-theme="dark"] #site .fan-card,
     [data-theme="dark"] #site .go, [data-theme="dark"] #site .theme-fab {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03)),
                   rgba(150, 175, 205, 0.28);
@@ -515,11 +518,12 @@
       border: 1px solid rgba(255, 255, 255, 0.7);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
                   inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-                  0 8px 28px rgba(0, 0, 0, 0.20),
-                  0 0 32px rgba(123, 180, 224, 0.06);
+                  0 8px 9px rgba(0, 0, 0, 0.20),
+                  0 0 11px rgba(123, 180, 224, 0.06);
     }
     [data-theme="light"] #site .card, [data-theme="light"] #site .post, [data-theme="light"] #site .work-logo,
-    [data-theme="light"] #site .blog-card, [data-theme="light"] #site .fan-card,
+    [data-theme="light"] #site .blog-card, [data-theme="light"] #site .contact-panel, [data-theme="light"] #site .c-btn,
+    [data-theme="light"] #site .fan-card,
     [data-theme="light"] #site .go, [data-theme="light"] #site .theme-fab {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.15)),
                   rgba(255, 255, 255, 0.22);
@@ -528,25 +532,23 @@
       border: 1px solid rgba(255, 255, 255, 0.7);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
                   inset 0 -1px 0 rgba(58, 127, 174, 0.10),
-                  0 8px 28px rgba(58, 127, 174, 0.10);
+                  0 8px 9px rgba(58, 127, 174, 0.10);
     }
     #site .card, #site .post, #site .blog-card {
       transition: transform 0.3s ease, border-color 0.3s, box-shadow 0.3s;
     }
-    /* hover：明显抬起 + 发光（低透明度版） */
+    /* hover：微微抬起 + 微发光（描边保持亮色不变，避免深色描边造成"变小"错觉） */
     [data-theme="dark"] #site .card:hover, [data-theme="dark"] #site .post:hover, [data-theme="dark"] #site .blog-card:hover {
-      transform: translateY(-6px);
-      border-color: rgba(123, 180, 224, 0.45);
+      transform: translateY(-3px);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
-                  0 12px 36px rgba(123, 180, 224, 0.16),
-                  0 0 48px rgba(123, 180, 224, 0.08);
+                  0 12px 12px rgba(123, 180, 224, 0.16),
+                  0 0 16px rgba(123, 180, 224, 0.08);
     }
     [data-theme="light"] #site .card:hover, [data-theme="light"] #site .post:hover, [data-theme="light"] #site .blog-card:hover {
-      transform: translateY(-6px);
-      border-color: rgba(58, 127, 174, 0.45);
+      transform: translateY(-3px);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
-                  0 12px 36px rgba(58, 127, 174, 0.14),
-                  0 0 48px rgba(58, 127, 174, 0.08);
+                  0 12px 12px rgba(58, 127, 174, 0.14),
+                  0 0 16px rgba(58, 127, 174, 0.08);
     }
     [data-theme="dark"] #site .card .go:hover { background: var(--accent-2); color: #0b0d10; }
     [data-theme="light"] #site .card .go:hover { background: var(--accent-2); color: #fff; }
@@ -642,24 +644,15 @@
       transition: opacity 0.6s ease;
     }
     body.hero-gone #site .fx-bubbles { opacity: 1; }
-    /* CSS 气泡：偏心径向渐变 + 双 inset 阴影（kail 配方），上浮呼吸 */
+    /* 彩色模糊团：无描边、无 inset 阴影（清晰感来源），色彩为主、边缘靠大半径 blur 化开（kail ls-blob 方向） */
     #site .bubble {
       position: absolute;
       border-radius: 50%;
-      background: radial-gradient(circle at 28% 26%,
-        rgba(255, 255, 255, 0.95), rgba(220, 233, 244, 0.75) 18%,
-        rgba(125, 180, 224, 0.45) 42%, rgba(110, 148, 255, 0.18) 68%,
-        rgba(80, 120, 255, 0.05));
-      border: 1.5px solid rgba(255, 255, 255, 0.85);
-      box-shadow: inset 0 0 44px rgba(255, 255, 255, 0.60),
-                  inset 0 -18px 36px rgba(120, 150, 255, 0.25),
-                  0 14px 48px rgba(80, 100, 210, 0.16),
-                  0 3px 10px rgba(100, 120, 240, 0.08);
       animation: bubble-float linear infinite;
       will-change: transform;
-      opacity: 0.75;
+      opacity: 0.8;
     }
-    [data-theme="dark"] #site .bubble { opacity: 0.4; }
+    [data-theme="dark"] #site .bubble { opacity: 0.7; }
     @keyframes bubble-float {
       0%   { transform: translateY(0) scale(1); }
       25%  { transform: translateY(-18px) scale(1.012); }
@@ -667,13 +660,26 @@
       75%  { transform: translateY(-22px) scale(1.008); }
       100% { transform: translateY(0) scale(1); }
     }
-    /* 全部放大（×1.75），按视口百分比布点 */
-    #site .bubble.b1 { width: 420px; height: 420px; top: -6%; left: 52%; animation-duration: 22s; }
-    #site .bubble.b2 { width: 300px; height: 300px; top: 10%; left: 84%; animation-duration: 19s; }
-    #site .bubble.b3 { width: 210px; height: 210px; top: 36%; left: 68%; animation-duration: 14s; }
-    #site .bubble.b4 { width: 350px; height: 350px; top: 46%; left: 6%;  animation-duration: 24s; }
-    #site .bubble.b5 { width: 175px; height: 175px; top: 70%; left: 80%; animation-duration: 12s; }
-    #site .bubble.b6 { width: 140px; height: 140px; top: 80%; left: 15%; animation-duration: 16s; }
+    /* 布点不变（视口百分比）；蓝/丁香紫为主，b5 一点暖色点缀；blur 随尺寸缩放 */
+    #site .bubble.b1 { width: 420px; height: 420px; top: -6%; left: 52%; animation-duration: 22s; filter: blur(64px);
+      background: radial-gradient(circle, rgba(125, 180, 224, 0.9), rgba(125, 180, 224, 0) 68%); }
+    #site .bubble.b2 { width: 300px; height: 300px; top: 10%; left: 84%; animation-duration: 19s; filter: blur(52px);
+      background: radial-gradient(circle, rgba(179, 158, 238, 0.85), rgba(179, 158, 238, 0) 68%); }
+    #site .bubble.b3 { width: 210px; height: 210px; top: 36%; left: 68%; animation-duration: 14s; filter: blur(40px);
+      background: radial-gradient(circle, rgba(150, 198, 240, 0.85), rgba(150, 198, 240, 0) 68%); }
+    #site .bubble.b4 { width: 350px; height: 350px; top: 46%; left: 6%;  animation-duration: 24s; filter: blur(56px);
+      background: radial-gradient(circle, rgba(141, 163, 235, 0.85), rgba(141, 163, 235, 0) 68%); }
+    #site .bubble.b5 { width: 175px; height: 175px; top: 70%; left: 80%; animation-duration: 12s; filter: blur(36px);
+      background: radial-gradient(circle, rgba(244, 196, 150, 0.8), rgba(244, 196, 150, 0) 68%); }
+    #site .bubble.b6 { width: 140px; height: 140px; top: 80%; left: 15%; animation-duration: 16s; filter: blur(32px);
+      background: radial-gradient(circle, rgba(198, 182, 245, 0.85), rgba(198, 182, 245, 0) 68%); }
+    /* 深色：同色相压深，但保持足够的色彩存在感 */
+    [data-theme="dark"] #site .bubble.b1 { background: radial-gradient(circle, rgba(82, 132, 186, 0.8), rgba(82, 132, 186, 0) 68%); }
+    [data-theme="dark"] #site .bubble.b2 { background: radial-gradient(circle, rgba(134, 108, 202, 0.75), rgba(134, 108, 202, 0) 68%); }
+    [data-theme="dark"] #site .bubble.b3 { background: radial-gradient(circle, rgba(96, 148, 204, 0.75), rgba(96, 148, 204, 0) 68%); }
+    [data-theme="dark"] #site .bubble.b4 { background: radial-gradient(circle, rgba(102, 120, 198, 0.75), rgba(102, 120, 198, 0) 68%); }
+    [data-theme="dark"] #site .bubble.b5 { background: radial-gradient(circle, rgba(216, 150, 82, 0.6), rgba(216, 150, 82, 0) 68%); }
+    [data-theme="dark"] #site .bubble.b6 { background: radial-gradient(circle, rgba(156, 136, 216, 0.75), rgba(156, 136, 216, 0) 68%); }
 
     /* Blog 横滚卡片流：原生横向滚动 + scroll-snap，隐藏滚动条 */
     #site .blog-stream {
@@ -718,13 +724,13 @@
     #site .blog-card p { margin: 0; font-size: 0.85rem; color: var(--fg-dim); line-height: 1.55; flex-grow: 1; }
     #site .blog-card time { font-size: 0.72rem; color: var(--fg-dim); letter-spacing: 0.04em; }
 
-    /* Friends 扇形散卡：底部同一点散开，hover 抽卡提起 */
+    /* Projects 扇形散卡（原 Friends 效果迁入）：底部同一点散开，hover 抽卡提起 */
     #site .fan {
       position: relative;
-      height: 330px;
+      height: 397px; /* 卡锚定容器底：此值只影响上间距（下间距恒为 margin 栈 47/60）；397px 时上下同宽（外卡 47/47、内卡 56/60） */
       margin: 2.5rem 0 1rem;
     }
-    /* 深色下扇形卡单独压暗：5 层玻璃叠加会累积增亮，每层不透明度减半 */
+    /* 深色下扇形卡单独压暗：多层玻璃叠加会累积增亮，每层不透明度减半 */
     [data-theme="dark"] #site .fan-card {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)),
                   rgba(150, 175, 205, 0.15);
@@ -733,9 +739,9 @@
       position: absolute;
       left: 50%;
       bottom: 10px;
-      width: 210px;
-      height: 270px;
-      margin-left: -105px;
+      width: 285px;
+      height: 365px;
+      margin-left: -142.5px;
       border-radius: 20px;
       transform-origin: 50% 100%;
       display: flex;
@@ -743,49 +749,97 @@
       align-items: center;
       text-align: center;
       gap: 0.5rem;
-      padding: 1.6rem 1.1rem;
+      padding: 1.8rem 1.3rem;
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
                   box-shadow 0.3s ease, border-color 0.3s ease;
     }
-    /* 扇形散开：每张卡水平位移 ±140px + 微旋转，重叠约 1/3、底部也拉开 */
-    #site .fan-card:nth-child(1) { transform: translateX(-280px) rotate(-10deg); }
-    #site .fan-card:nth-child(2) { transform: translateX(-140px) rotate(-5deg); }
-    #site .fan-card:nth-child(3) { transform: rotate(0deg); }
-    #site .fan-card:nth-child(4) { transform: translateX(140px) rotate(5deg); }
-    #site .fan-card:nth-child(5) { transform: translateX(280px) rotate(10deg); }
+    /* 4 卡扇形：水平位移 ±90/±265 + 微旋转，重叠约 1/3、底部也拉开；总跨度 ~900px 与 blog 流同宽 */
+    #site .fan-card:nth-child(1) { transform: translateX(-265px) rotate(-7.5deg); }
+    #site .fan-card:nth-child(2) { transform: translateX(-90px) rotate(-2.5deg); }
+    #site .fan-card:nth-child(3) { transform: translateX(90px) rotate(2.5deg); }
+    #site .fan-card:nth-child(4) { transform: translateX(265px) rotate(7.5deg); }
     /* hover：原位提起（保留各自 translateX，不跳回中心） */
-    #site .fan-card:nth-child(1):hover { transform: translateX(-280px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
-    #site .fan-card:nth-child(2):hover { transform: translateX(-140px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
-    #site .fan-card:nth-child(3):hover { transform: rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
-    #site .fan-card:nth-child(4):hover { transform: translateX(140px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
-    #site .fan-card:nth-child(5):hover { transform: translateX(280px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
+    #site .fan-card:nth-child(1):hover { transform: translateX(-265px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
+    #site .fan-card:nth-child(2):hover { transform: translateX(-90px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
+    #site .fan-card:nth-child(3):hover { transform: translateX(90px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
+    #site .fan-card:nth-child(4):hover { transform: translateX(265px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
     [data-theme="dark"] #site .fan-card:hover {
-      border-color: rgba(123, 180, 224, 0.45);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
-                  0 18px 48px rgba(123, 180, 224, 0.16),
-                  0 0 48px rgba(123, 180, 224, 0.08);
+                  0 18px 16px rgba(123, 180, 224, 0.16),
+                  0 0 16px rgba(123, 180, 224, 0.08);
     }
     [data-theme="light"] #site .fan-card:hover {
-      border-color: rgba(58, 127, 174, 0.45);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
-                  0 18px 48px rgba(58, 127, 174, 0.14),
-                  0 0 48px rgba(58, 127, 174, 0.08);
+                  0 18px 16px rgba(58, 127, 174, 0.14),
+                  0 0 16px rgba(58, 127, 174, 0.08);
     }
     #site .fan-card .f-emoji {
-      width: 3.2rem;
-      height: 3.2rem;
+      width: 4rem;
+      height: 4rem;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.7rem;
+      font-size: 2rem;
       background: linear-gradient(135deg, var(--grad-from), var(--grad-to));
     }
-    #site .fan-card h3 { margin: 0.3rem 0 0; font-size: 1.05rem; font-weight: 700; }
-    #site .fan-card p { margin: 0; font-size: 0.8rem; color: var(--fg-dim); line-height: 1.55; }
+    #site .fan-card h3 { margin: 0.4rem 0 0; font-size: 1.2rem; font-weight: 700; }
+    #site .fan-card p { margin: 0; font-size: 0.88rem; color: var(--fg-dim); line-height: 1.55; }
     /* 小屏：扇形整体缩小 */
     @media (max-width: 640px) {
       #site .fan { height: 190px; transform: scale(0.44); transform-origin: center bottom; }
+    }
+
+    /* Contact 分栏玻璃卡（参考图同款）：SOCIALS / PORTFOLIOS / CONTACT 三栏，栏标题大字 + 玻璃图标按钮 */
+    #site .contact-panel {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin: 2.5rem 0 1rem;
+      padding: 2rem 2.25rem;
+      border-radius: 20px;
+    }
+    #site .c-col h3 {
+      margin: 0 0 1rem;
+      font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    #site .c-row { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+    #site .c-btn {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--fg);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    #site .c-btn svg { width: 1.25rem; height: 1.25rem; display: block; }
+    /* 深色下玻璃按钮叠在玻璃面板上会累积增亮，单独压暗（每层不透明度减半） */
+    [data-theme="dark"] #site .c-btn {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)),
+                  rgba(150, 175, 205, 0.15);
+    }
+    /* hover：微抬 + 微发光（描边保持亮色不变，避免"变小"错觉） */
+    [data-theme="dark"] #site .c-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                  0 12px 12px rgba(123, 180, 224, 0.16),
+                  0 0 16px rgba(123, 180, 224, 0.08);
+    }
+    [data-theme="light"] #site .c-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+                  0 12px 12px rgba(58, 127, 174, 0.14),
+                  0 0 16px rgba(58, 127, 174, 0.08);
+    }
+    /* 小屏：三栏叠成单栏 */
+    @media (max-width: 640px) {
+      #site .contact-panel { grid-template-columns: 1fr; gap: 1.75rem; padding: 1.5rem; }
       #site .blog-card { flex-basis: 210px; }
     }
   </style>
@@ -914,56 +968,32 @@
         </div>
       </div>
 
-      <!-- Projects -->
+      <!-- Projects：扇形散卡（原 Friends 效果迁入） -->
       <div class="section-head" id="projects">
         <h2>Projects &lt;/&gt;</h2>
         <div class="grow"></div>
       </div>
-      <div class="card-grid">
-        <div class="card">
-          <div class="card-top">
-            <div>
-              <h3>tiny-render</h3>
-              <p>A minimal software renderer written from scratch in TypeScript — rasterization, shading, and a tiny scene graph.</p>
-            </div>
-            <a class="go" href="#" target="_blank" rel="noopener noreferrer" aria-label="Visit tiny-render">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            </a>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-top">
-            <div>
-              <h3>weekend-os</h3>
-              <p>A toy operating system kernel built over weekends: bootloader, memory management, and a very opinionated shell.</p>
-            </div>
-            <a class="go" href="#" target="_blank" rel="noopener noreferrer" aria-label="Visit weekend-os">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            </a>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-top">
-            <div>
-              <h3>photo-log</h3>
-              <p>A self-hosted photo journal with a map view, EXIF timeline, and zero tracking — just my pictures, my server.</p>
-            </div>
-            <a class="go" href="#" target="_blank" rel="noopener noreferrer" aria-label="Visit photo-log">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            </a>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-top">
-            <div>
-              <h3>dotfiles</h3>
-              <p>My development environment, versioned and reproducible: Neovim, tmux, and a collection of small CLI helpers.</p>
-            </div>
-            <a class="go" href="#" target="_blank" rel="noopener noreferrer" aria-label="Visit dotfiles">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            </a>
-          </div>
-        </div>
+      <div class="fan">
+        <a class="fan-card" href="#" target="_blank" rel="noopener noreferrer">
+          <div class="f-emoji">🖥</div>
+          <h3>tiny-render</h3>
+          <p>A minimal software renderer written from scratch in TypeScript — rasterization, shading, and a tiny scene graph.</p>
+        </a>
+        <a class="fan-card" href="#" target="_blank" rel="noopener noreferrer">
+          <div class="f-emoji">⌨️</div>
+          <h3>weekend-os</h3>
+          <p>A toy operating system kernel built over weekends: bootloader, memory management, and a very opinionated shell.</p>
+        </a>
+        <a class="fan-card" href="#" target="_blank" rel="noopener noreferrer">
+          <div class="f-emoji">📷</div>
+          <h3>photo-log</h3>
+          <p>A self-hosted photo journal with a map view, EXIF timeline, and zero tracking — just my pictures, my server.</p>
+        </a>
+        <a class="fan-card" href="#" target="_blank" rel="noopener noreferrer">
+          <div class="f-emoji">⚙️</div>
+          <h3>dotfiles</h3>
+          <p>My development environment, versioned and reproducible: Neovim, tmux, and a collection of small CLI helpers.</p>
+        </a>
       </div>
 
       <!-- Blog：横滚卡片流 -->
@@ -1004,37 +1034,51 @@
         </a>
       </div>
 
-      <!-- Friends：扇形散卡 -->
-      <div class="section-head" id="friends">
-        <h2>Friends ✲</h2>
+      <!-- Contact：分栏玻璃卡（参考图同款：栏标题大字 + 玻璃图标按钮，链接均为占位） -->
+      <div class="section-head" id="contact">
+        <h2>Contact ✉</h2>
         <div class="grow"></div>
       </div>
-      <div class="fan">
-        <a class="fan-card" href="#" target="_blank" rel="noopener noreferrer">
-          <div class="f-emoji">🎮</div>
-          <h3>Ada</h3>
-          <p>Graphics programmer — rendering, math, and pretty pixels.</p>
-        </a>
-        <a class="fan-card" href="#" target="_blank" rel="noopener noreferrer">
-          <div class="f-emoji">🛠</div>
-          <h3>Lin</h3>
-          <p>Indie hacker — ships fast, stays small, blogs both.</p>
-        </a>
-        <a class="fan-card" href="#" target="_blank" rel="noopener noreferrer">
-          <div class="f-emoji">📚</div>
-          <h3>Mina</h3>
-          <p>Type designer & reader — collects beautiful books.</p>
-        </a>
-        <a class="fan-card" href="#" target="_blank" rel="noopener noreferrer">
-          <div class="f-emoji">🌊</div>
-          <h3>Kiko</h3>
-          <p>Creative coder — generative art and tiny web toys.</p>
-        </a>
-        <a class="fan-card" href="#" target="_blank" rel="noopener noreferrer">
-          <div class="f-emoji">🧭</div>
-          <h3>Ren</h3>
-          <p>Urban explorer — photographs cities at night.</p>
-        </a>
+      <div class="contact-panel">
+        <div class="c-col">
+          <h3>Socials</h3>
+          <div class="c-row">
+            <a class="c-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            </a>
+            <a class="c-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="X" title="X">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
+            </a>
+            <a class="c-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="c-col">
+          <h3>Portfolios</h3>
+          <div class="c-row">
+            <a class="c-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="Dribbble" title="Dribbble">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 24C5.385 24 0 18.615 0 12S5.385 0 12 0s12 5.385 12 12-5.385 12-12 12zm10.12-10.358c-.35-.11-3.17-.953-6.384-.438 1.34 3.684 1.887 6.684 1.992 7.308 2.3-1.555 3.936-4.02 4.395-6.87zm-6.115 7.808c-.153-.9-.75-4.032-2.19-7.77l-.066.02c-5.79 2.015-7.86 6.025-8.04 6.4 1.73 1.358 3.92 2.166 6.29 2.166 1.42 0 2.77-.29 4-.816zm-11.62-2.58c.232-.4 3.045-5.055 8.332-6.765.135-.045.27-.084.405-.12-.26-.585-.54-1.167-.832-1.74C7.17 11.775 2.206 11.71 1.756 11.7l-.004.312c0 2.633.998 5.037 2.634 6.855zm-2.42-8.955c.46.008 4.683.026 9.477-1.248-1.698-3.018-3.53-5.558-3.8-5.928-2.868 1.35-5.01 3.99-5.676 7.17zM9.6 2.052c.282.38 2.145 2.914 3.822 6 3.645-1.365 5.19-3.44 5.373-3.702-1.81-1.61-4.19-2.586-6.795-2.586-.825 0-1.63.1-2.4.285zm10.335 3.483c-.218.29-1.935 2.493-5.724 4.04.24.49.47.985.68 1.486.08.18.15.36.22.53 3.41-.43 6.8.26 7.14.33-.02-2.42-.88-4.64-2.31-6.38z"/></svg>
+            </a>
+            <a class="c-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="Behance" title="Behance">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 7h-7V5h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14H15.97c.13 3.211 3.483 3.312 4.588 2.029h3.168zm-7.686-4h4.965c-.105-1.547-1.136-2.219-2.477-2.219-1.466 0-2.277.768-2.488 2.219zm-9.574 6.988H0V5.021h6.953c5.476.081 5.58 5.444 2.72 6.906 3.461 1.26 3.577 8.061-3.207 8.061zM3 11h3.584c2.508 0 2.906-3-.312-3H3v3zm3.391 3H3v3.016h3.341c3.055 0 2.868-3.016.05-3.016z"/></svg>
+            </a>
+            <a class="c-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="c-col">
+          <h3>Contact</h3>
+          <div class="c-row">
+            <a class="c-btn" href="mailto:hi@jaime.dev" aria-label="Email" title="hi@jaime.dev">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </a>
+            <a class="c-btn" href="#" aria-label="WeChat" title="WeChat: jaime-dev">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+            </a>
+          </div>
+        </div>
       </div>
 
       <footer>
@@ -1107,6 +1151,16 @@
           clearTimeout(accTimer);
           accTimer = setTimeout(() => { acc = 0; }, 350);
           if (acc > 260) { acc = 0; goTo(t); }
+        } else if (heroGone && mq.matches && collapseP < 1 && y <= 0 && e.deltaY > 0) {
+          // 阶段1：左栏收拢中——页面钉住不动，右栏只换行不下滑
+          e.preventDefault();
+          collapseP = Math.min(1, collapseP + e.deltaY / COLLAPSE_WHEEL);
+          drive();
+        } else if (heroGone && mq.matches && y <= 0 && e.deltaY < 0 && collapseP > 0) {
+          // 阶段1回退：左栏重新展开
+          e.preventDefault();
+          collapseP = Math.max(0, collapseP + e.deltaY / COLLAPSE_WHEEL);
+          drive();
         } else if (entered && e.deltaY < 0) {
           const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1);
           if (y <= t) {
@@ -1119,8 +1173,24 @@
           }
         }
       }, { passive: false });
-      // 键盘上滑（方向键/PageUp/Home）同样拦截
       window.addEventListener('keydown', (e) => {
+        // 阶段1：键盘下滚也先收拢左栏（页面不动）
+        if (heroGone && mq.matches && collapseP < 1 && window.scrollY <= 0 &&
+            (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown')) {
+          e.preventDefault();
+          collapseP = Math.min(1, collapseP + 0.25);
+          drive();
+          return;
+        }
+        // 阶段1回退：键盘上滑重新展开左栏
+        if (heroGone && mq.matches && collapseP > 0 && window.scrollY <= 0 &&
+            (e.key === 'ArrowUp' || e.key === 'PageUp')) {
+          e.preventDefault();
+          collapseP = Math.max(0, collapseP - 0.25);
+          drive();
+          return;
+        }
+        // 键盘上滑（方向键/PageUp/Home）同样拦截
         if (entered && window.scrollY <= top() &&
             (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'Home')) {
           e.preventDefault();
@@ -1151,19 +1221,17 @@
         if (!heroGone && !animating && entered && window.scrollY >= top()) finishEnter();
       });
 
-      // 分割线滚动平移（mistral.ai 同款）：正文内向下滑，
-      // 左栏从 65vw（从右往左 35%）收拢到 0，橙线左移（深浅色一致）
+      // 分割线滚动平移（mistral.ai 同款）：进入正文后左栏 65vw 展开；
+      // 阶段1 滚轮先收拢左栏（页面钉住，右栏只换行不下滑），收完才放行页面滚动
       const sidebar = document.querySelector('#site .sidebar');
       const mq = window.matchMedia('(min-width: 1024px)');
       let BASE = sidebar.getBoundingClientRect().width || 304;
       let targetW = BASE, curW = null, driving = false;
-      const progress = () => {
-        const range = document.documentElement.scrollHeight - top() - window.innerHeight;
-        return range > 0
-          ? Math.min(Math.max((window.scrollY - top()) / range, 0), 1) : 0;
-      };
+      // 阶段式收拢：collapseP 0→1 由滚轮累计驱动
+      let collapseP = 0;
+      const COLLAPSE_WHEEL = 700; // 收拢全程所需滚轮量(px)
       const measure = () => {
-        targetW = window.innerWidth * 0.65 * (1 - progress());
+        targetW = window.innerWidth * 0.65 * (1 - collapseP);
       };
       const tick = () => {
         curW += (targetW - curW) * 0.12;
