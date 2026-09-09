@@ -53,7 +53,7 @@ portfolio-hero/
   - `.side-photo`：3:4 竖图占位（渐变 + PHOTO 标），top 20vh、left 1.6%（从 4% 缩到 40%）、width 42%
   - `.side-title`「CREATIVE DEVELOPER」：`writing-mode: vertical-lr`（朝左竖排）、Arial Narrow 窄体、0.75rem、letter-spacing 0.3em、`color: var(--fg)`（与右缘竖排同款，2026-09-10 从 fg-dim 改）、紧贴照片右缘（`left: calc(43.6% + 0.4rem)`，随照片左移重算）
   - `.side-bio`：简介小字块，left 4%、bottom 5vh、width 62%
-  - `.side-vertical`「About Myself」：`writing-mode: vertical-rl`、窄体（Arial Narrow + condensed）、`color: var(--fg)`、0.75rem、顶住面板右缘
+  - `.side-vertical`「About Myself」：`writing-mode: vertical-rl`、窄体（Arial Narrow + condensed）、`color: var(--fg)`、`clamp(2rem, 5.5vh, 2.75rem)` + weight 700 + letter-spacing 0.2em（2026-09-10 用户要求从 0.75rem 放大加粗，"比 JAIME 小两个号"）、顶住面板右缘
 
 ### 3.4 滚动机制（重要，历经多轮修复）
 
@@ -65,13 +65,12 @@ portfolio-hero/
 ### 3.5 正文（main）——kail.studio 风格重构（2026-09-10 完成）
 
 - **结构**：简介（hero-title + intro）→ Works（2 组公司卡）→ Projects（4 卡 grid）→ Blog（横滚卡片流）→ Friends（扇形散卡）→ footer。全部占位文案，复用删除前的旧文案并补充
-- **背景特效层 `.fx-bg`**（#site 首个子元素，absolute inset 0，z-index 0）：
-  - 流动渐变场 `.fx-gradient`：`inset: -25%` 超大内层 + `translate3d` 关键帧漂移 42s（合成层动画，零重排，照顾滚动流畅）。浅色为浅蓝系渐变，深色为深灰蓝系
-  - 6 个 CSS 气泡 `.bubble.b1-b6`：kail 配方（28% 26% 偏心径向渐变 + 双 inset 阴影 + 1.5px 白描边），上浮呼吸动画（±20px + 微缩放），`will-change: transform`。浅色 opacity 0.75，**深色 0.4**（0.22 时呈暗盘状不可见）
-  - **顶部 480px 接缝区用 mask 遮蔽**（`mask-image: linear-gradient(transparent 0, black 480px)`），保护封面→正文过渡色不被盖住
-- **液态玻璃三件套**（亮描边+顶部内高光+彩色软阴影）：`.card/.post/.work-logo/.blog-card/.fan-card` 统一。深色 blur(24px) saturate(1.5) + 白描边 0.22 + 内高光 0.25 + 黑软阴影 + 冰蓝辉光；浅色 blur(24px) saturate(1.6) + 蓝描边 0.28 + 内高光 0.95 + 蓝软阴影
+- **背景特效层**（#site 前两个子元素，均 z-index 0）：
+  - `.fx-bg` 流动渐变场（absolute inset 0，顶部 480px 接缝区 mask 遮蔽）：`inset: -25%` 超大内层 + `translate3d` 关键帧漂移 42s（合成层动画，零重排）。浅色为浅蓝系渐变，深色为深灰蓝系
+  - `.fx-bubbles` 气泡层（**position: fixed 固定视口，不随滚动移动**，2026-09-10 用户要求从滚动层移出）：`opacity: 0`，`body.hero-gone` 时淡入 0.6s（hero 阶段不可见；hero-gone 类在 finishEnter 里添加）。6 个 CSS 气泡 `.bubble.b1-b6`：kail 配方（28% 26% 偏心径向渐变 + 双 inset 阴影 + 1.5px 白描边），上浮呼吸动画（±20px + 微缩放）。尺寸 ×1.75（420/300/210/350/175/140px），按视口百分比布点；**b4(350px, top 46%, left 6%) 和 b6(140px, top 80%, left 15%) 放在左侧区域**（2026-09-10 用户指出侧栏收拢后左边空）——侧栏在时被遮住，收拢后显露。浅色 opacity 0.75，深色 0.4
+- **液态玻璃三件套**（2026-09-10 升级，覆盖 `.card/.post/.work-logo/.blog-card/.fan-card` + 按钮 `.go` + 切换按钮 `.theme-fab`）：亮描边 `rgba(255,255,255,0.7)`、顶部内高光（深色 0.5 / 浅色 0.95）、**低透明度软阴影**（深色 `rgba(0,0,0,0.20)+rgba(123,180,224,0.06)`、浅色 `rgba(58,127,174,0.10)`；用户第一版要求写"暖橙色"后删去，按最新版执行为冷色系低透明度）。`backdrop-filter: blur(24px) saturate(1.4)`（两主题统一）。**玻璃背景 alpha 刻意压低保证通透**（深色 `rgba(150,175,205,0.28)` + 白渐变 0.10/0.03；浅色 `rgba(255,255,255,0.22)` + 白渐变 0.50/0.15）——要隐隐透出背后的气泡/渐变场，太实会像白板（用户明确指出"要能看到蓝色圆球"；曾按"透明度+20%"加到 0.36/0.66 被否，回收到更低）。圆角卡片统一 20px（`.card/.post/.blog-card` 从 0.75rem 加大；`.fan-card` 原本就是 20px）。hover 阴影同为低透明度冷色版
 - **Blog 横滚卡片流 `.blog-stream`**：`overflow-x: auto` + `scroll-snap-type: x mandatory` + 隐藏滚动条；卡 `flex: 0 0 250px`。负 margin 出血（`margin: 0 -1.5rem` + `padding: 6px 1.5rem 14px`）让流贴 main 边缘、卡 1 对齐正文。**必须配 `scroll-padding-left: 1.5rem`**，否则 scroll-snap 把卡 1 吸到容器左缘（scrollLeft 停在 24），出血失效卡 1 贴屏幕边
-- **Friends 扇形散卡 `.fan`**：5 卡 absolute 同一点（left 50% + margin-left -105px），`transform-origin: 50% 115%`，nth-child 旋转 -16/-8/0/8/16°，hover 抽卡（rotate 0 + translateY(-28px) + scale 1.05 + z-index 10，cubic-bezier(.16,1,.3,1)）。**深色下扇形卡单独压暗**（每层不透明度减半：白渐变 0.07/0.02 + 蓝灰 0.16）——5 层玻璃叠加会累积增亮。移动端 `.fan` scale(0.78)
+- **Friends 扇形散卡 `.fan`**：5 卡 absolute（left 50% + margin-left -105px），`transform-origin: 50% 100%`，**水平位移 + 微旋转散开**（nth-child：translateX ±280/±140/0px + rotate ±10/±5/0°，重叠约 1/3，每张卡面 ~67% 可见，底部也拉开——扑克牌手感，2026-09-10 从同心旋转 ±16° 改，之前太挤）。hover 逐卡规则：**保留各自 translateX 原位提起**（rotate→0 + translateY(-28px) + scale 1.05 + z-index 10，不回中心）。深色下扇形卡单独压暗（白渐变 0.06/0.015 + 蓝灰 0.15，防 5 层叠加累积增亮）。移动端 `.fan` scale(0.44) height 190px
 - **关键修复 `main { min-width: 0 }`**：blog 横滚流的 min-content（5×250px 卡）把 main 的自动最小尺寸顶到 max-width 900px，flex 收缩失效 → 整页横向溢出 371px。加 min-width: 0 后 main 收缩到剩余空间，blog 流内部滚动
 - 旧 CSS（`.post/.work-group/.card-grid` 等）保留复用；`.post` 目前未被 markup 使用（blog 改用 `.blog-card`），样式留在玻璃选择器组里无害
 

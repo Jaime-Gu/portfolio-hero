@@ -243,7 +243,7 @@
     @media (min-width: 768px) {#site .card-grid { grid-template-columns: 1fr 1fr; }
     }#site .card {
       position: relative;
-      border-radius: 0.75rem;
+      border-radius: 20px;
       border: 1px solid var(--border);
       background: var(--bg);
       padding: 1.25rem;
@@ -287,7 +287,7 @@
       gap: 1.25rem;
       align-items: center;
       padding: 1.25rem;
-      border-radius: 0.75rem;
+      border-radius: 20px;
       border: 1px solid var(--border);
       transition: box-shadow 0.3s, border-color 0.3s;
     }#site .post:hover { box-shadow: var(--card-shadow); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }#site .post .emoji {
@@ -485,8 +485,9 @@
       writing-mode: vertical-rl;
       font-family: "Arial Narrow", "Helvetica Neue Condensed", "PingFang SC", sans-serif;
       font-stretch: condensed;
-      font-size: 0.75rem;
-      letter-spacing: 0.3em;
+      font-size: clamp(2rem, 5.5vh, 2.75rem);
+      font-weight: 700;
+      letter-spacing: 0.2em;
       white-space: nowrap;
       color: var(--fg);
       text-transform: uppercase;
@@ -502,47 +503,50 @@
     #site .menu a.active { color: var(--accent); }
     #site .socials a:hover { color: var(--accent-2); }
 
-    /* 液态毛玻璃文字块（kail 三件套：亮描边 + 顶部内高光 + 彩色软阴影） */
+    /* 液态毛玻璃（kail 三件套：rgba(255,255,255,0.7) 亮描边 + 顶部内高光 + 低透明度软阴影；
+       覆盖卡片 / 按钮(.go) / 切换按钮(.theme-fab)；透明度 +20%，backdrop 统一 saturate(1.4)） */
     [data-theme="dark"] #site .card, [data-theme="dark"] #site .post, [data-theme="dark"] #site .work-logo,
-    [data-theme="dark"] #site .blog-card, [data-theme="dark"] #site .fan-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03)),
-                  rgba(150, 175, 205, 0.30);
-      backdrop-filter: blur(24px) saturate(1.5);
-      -webkit-backdrop-filter: blur(24px) saturate(1.5);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    [data-theme="dark"] #site .blog-card, [data-theme="dark"] #site .fan-card,
+    [data-theme="dark"] #site .go, [data-theme="dark"] #site .theme-fab {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03)),
+                  rgba(150, 175, 205, 0.28);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
                   inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-                  0 8px 28px rgba(0, 0, 0, 0.30),
-                  0 0 32px rgba(123, 180, 224, 0.08);
+                  0 8px 28px rgba(0, 0, 0, 0.20),
+                  0 0 32px rgba(123, 180, 224, 0.06);
     }
     [data-theme="light"] #site .card, [data-theme="light"] #site .post, [data-theme="light"] #site .work-logo,
-    [data-theme="light"] #site .blog-card, [data-theme="light"] #site .fan-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0.50)),
-                  rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(24px) saturate(1.6);
-      -webkit-backdrop-filter: blur(24px) saturate(1.6);
-      border: 1px solid rgba(58, 127, 174, 0.28);
+    [data-theme="light"] #site .blog-card, [data-theme="light"] #site .fan-card,
+    [data-theme="light"] #site .go, [data-theme="light"] #site .theme-fab {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.15)),
+                  rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      border: 1px solid rgba(255, 255, 255, 0.7);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
                   inset 0 -1px 0 rgba(58, 127, 174, 0.10),
-                  0 8px 28px rgba(58, 127, 174, 0.14);
+                  0 8px 28px rgba(58, 127, 174, 0.10);
     }
     #site .card, #site .post, #site .blog-card {
       transition: transform 0.3s ease, border-color 0.3s, box-shadow 0.3s;
     }
-    /* hover：明显抬起 + 发光（深色冰蓝 / 浅色蓝） */
+    /* hover：明显抬起 + 发光（低透明度版） */
     [data-theme="dark"] #site .card:hover, [data-theme="dark"] #site .post:hover, [data-theme="dark"] #site .blog-card:hover {
       transform: translateY(-6px);
       border-color: rgba(123, 180, 224, 0.45);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22),
-                  0 12px 36px rgba(123, 180, 224, 0.24),
-                  0 0 48px rgba(123, 180, 224, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                  0 12px 36px rgba(123, 180, 224, 0.16),
+                  0 0 48px rgba(123, 180, 224, 0.08);
     }
     [data-theme="light"] #site .card:hover, [data-theme="light"] #site .post:hover, [data-theme="light"] #site .blog-card:hover {
       transform: translateY(-6px);
       border-color: rgba(58, 127, 174, 0.45);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90),
-                  0 12px 36px rgba(58, 127, 174, 0.20),
-                  0 0 48px rgba(58, 127, 174, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+                  0 12px 36px rgba(58, 127, 174, 0.14),
+                  0 0 48px rgba(58, 127, 174, 0.08);
     }
     [data-theme="dark"] #site .card .go:hover { background: var(--accent-2); color: #0b0d10; }
     [data-theme="light"] #site .card .go:hover { background: var(--accent-2); color: #fff; }
@@ -628,6 +632,16 @@
     [data-theme="dark"] #site .fx-gradient {
       background: linear-gradient(-45deg, #1f2a33, #262420, #22303a, #2b2620, #1f2a33);
     }
+    /* 气泡层：固定在视口（不随滚动移动），hero 阶段隐藏，进入正文后淡入 */
+    #site .fx-bubbles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    body.hero-gone #site .fx-bubbles { opacity: 1; }
     /* CSS 气泡：偏心径向渐变 + 双 inset 阴影（kail 配方），上浮呼吸 */
     #site .bubble {
       position: absolute;
@@ -653,12 +667,13 @@
       75%  { transform: translateY(-22px) scale(1.008); }
       100% { transform: translateY(0) scale(1); }
     }
-    #site .bubble.b1 { width: 240px; height: 240px; top: 5%;  left: 50%; animation-duration: 22s; }
-    #site .bubble.b2 { width: 170px; height: 170px; top: 17%; left: 82%; animation-duration: 19s; }
-    #site .bubble.b3 { width: 120px; height: 120px; top: 33%; left: 66%; animation-duration: 14s; }
-    #site .bubble.b4 { width: 200px; height: 200px; top: 52%; left: 44%; animation-duration: 24s; }
-    #site .bubble.b5 { width: 100px; height: 100px; top: 70%; left: 78%; animation-duration: 12s; }
-    #site .bubble.b6 { width: 80px;  height: 80px;  top: 86%; left: 56%; animation-duration: 16s; }
+    /* 全部放大（×1.75），按视口百分比布点 */
+    #site .bubble.b1 { width: 420px; height: 420px; top: -6%; left: 52%; animation-duration: 22s; }
+    #site .bubble.b2 { width: 300px; height: 300px; top: 10%; left: 84%; animation-duration: 19s; }
+    #site .bubble.b3 { width: 210px; height: 210px; top: 36%; left: 68%; animation-duration: 14s; }
+    #site .bubble.b4 { width: 350px; height: 350px; top: 46%; left: 6%;  animation-duration: 24s; }
+    #site .bubble.b5 { width: 175px; height: 175px; top: 70%; left: 80%; animation-duration: 12s; }
+    #site .bubble.b6 { width: 140px; height: 140px; top: 80%; left: 15%; animation-duration: 16s; }
 
     /* Blog 横滚卡片流：原生横向滚动 + scroll-snap，隐藏滚动条 */
     #site .blog-stream {
@@ -681,7 +696,7 @@
       flex-direction: column;
       gap: 0.55rem;
       padding: 1.1rem 1.25rem 1.25rem;
-      border-radius: 0.75rem;
+      border-radius: 20px;
     }
     #site .blog-card .emoji {
       font-size: 1.6rem;
@@ -711,8 +726,8 @@
     }
     /* 深色下扇形卡单独压暗：5 层玻璃叠加会累积增亮，每层不透明度减半 */
     [data-theme="dark"] #site .fan-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
-                  rgba(150, 175, 205, 0.16);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)),
+                  rgba(150, 175, 205, 0.15);
     }
     #site .fan-card {
       position: absolute;
@@ -722,7 +737,7 @@
       height: 270px;
       margin-left: -105px;
       border-radius: 20px;
-      transform-origin: 50% 115%;
+      transform-origin: 50% 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -732,26 +747,29 @@
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
                   box-shadow 0.3s ease, border-color 0.3s ease;
     }
-    #site .fan-card:nth-child(1) { transform: rotate(-16deg); }
-    #site .fan-card:nth-child(2) { transform: rotate(-8deg); }
+    /* 扇形散开：每张卡水平位移 ±140px + 微旋转，重叠约 1/3、底部也拉开 */
+    #site .fan-card:nth-child(1) { transform: translateX(-280px) rotate(-10deg); }
+    #site .fan-card:nth-child(2) { transform: translateX(-140px) rotate(-5deg); }
     #site .fan-card:nth-child(3) { transform: rotate(0deg); }
-    #site .fan-card:nth-child(4) { transform: rotate(8deg); }
-    #site .fan-card:nth-child(5) { transform: rotate(16deg); }
-    #site .fan-card:hover {
-      transform: rotate(0deg) translateY(-28px) scale(1.05);
-      z-index: 10;
-    }
+    #site .fan-card:nth-child(4) { transform: translateX(140px) rotate(5deg); }
+    #site .fan-card:nth-child(5) { transform: translateX(280px) rotate(10deg); }
+    /* hover：原位提起（保留各自 translateX，不跳回中心） */
+    #site .fan-card:nth-child(1):hover { transform: translateX(-280px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
+    #site .fan-card:nth-child(2):hover { transform: translateX(-140px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
+    #site .fan-card:nth-child(3):hover { transform: rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
+    #site .fan-card:nth-child(4):hover { transform: translateX(140px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
+    #site .fan-card:nth-child(5):hover { transform: translateX(280px) rotate(0deg) translateY(-28px) scale(1.05); z-index: 10; }
     [data-theme="dark"] #site .fan-card:hover {
       border-color: rgba(123, 180, 224, 0.45);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22),
-                  0 18px 48px rgba(123, 180, 224, 0.24),
-                  0 0 48px rgba(123, 180, 224, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                  0 18px 48px rgba(123, 180, 224, 0.16),
+                  0 0 48px rgba(123, 180, 224, 0.08);
     }
     [data-theme="light"] #site .fan-card:hover {
       border-color: rgba(58, 127, 174, 0.45);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90),
-                  0 18px 48px rgba(58, 127, 174, 0.22),
-                  0 0 48px rgba(58, 127, 174, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
+                  0 18px 48px rgba(58, 127, 174, 0.14),
+                  0 0 48px rgba(58, 127, 174, 0.08);
     }
     #site .fan-card .f-emoji {
       width: 3.2rem;
@@ -767,7 +785,7 @@
     #site .fan-card p { margin: 0; font-size: 0.8rem; color: var(--fg-dim); line-height: 1.55; }
     /* 小屏：扇形整体缩小 */
     @media (max-width: 640px) {
-      #site .fan { height: 270px; transform: scale(0.78); transform-origin: center bottom; }
+      #site .fan { height: 190px; transform: scale(0.44); transform-origin: center bottom; }
       #site .blog-card { flex-basis: 210px; }
     }
   </style>
@@ -778,9 +796,12 @@
     <div class="scroll-hint"><span>SCROLL</span><span class="chevrons"><i></i><i></i></span></div>
   </section>
   <div id="site">
-  <!-- 背景特效层：流动渐变场 + 气泡（垫在内容下，顶部接缝区遮蔽） -->
+  <!-- 背景特效层：流动渐变场（垫在内容下，顶部接缝区遮蔽） -->
   <div class="fx-bg" aria-hidden="true">
     <div class="fx-gradient"></div>
+  </div>
+  <!-- 气泡层：固定视口不随滚动，进入正文后淡入 -->
+  <div class="fx-bubbles" aria-hidden="true">
     <i class="bubble b1"></i>
     <i class="bubble b2"></i>
     <i class="bubble b3"></i>
@@ -1121,6 +1142,7 @@
         const offset = window.scrollY - top();
         heroGone = true;
         hero.style.display = 'none';
+        document.body.classList.add('hero-gone'); // 气泡层据此淡入（hero 阶段不可见）
         window.scrollTo({ top: Math.max(offset, 0), behavior: 'instant' });
       };
       window.addEventListener('scroll', () => {
