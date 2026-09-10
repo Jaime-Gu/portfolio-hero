@@ -402,7 +402,7 @@
 
     /* 侧边栏：苹果级液态玻璃——薄磨砂透出背景彩团/渐变场，边缘弧度+折射形变，液态流动 */
     #site .sidebar {
-      border-radius: 0 28px 28px 0;
+      border-radius: 0 40px 40px 0;
       background: transparent;
       box-shadow: 16px 0 48px rgba(31, 42, 55, 0.10);
     }
@@ -413,20 +413,22 @@
       border-radius: inherit;
       overflow: hidden;
       pointer-events: none;
-      /* 兜底纯模糊在前，url 折射在后（url 无效时整行被丢弃，自动回退上行） */
-      backdrop-filter: blur(26px) saturate(1.7);
-      -webkit-backdrop-filter: blur(26px) saturate(1.7);
-      backdrop-filter: url(#lg-refract) blur(26px) saturate(1.7);
-      -webkit-backdrop-filter: url(#lg-refract) blur(26px) saturate(1.7);
+      /* 全透明玻璃：只提色（saturate 1.7）不做折射——任何 SVG url() 滤镜/SMIL/整屏
+         backdrop 模糊层都是闪烁根源，禁止再引入（教训 1）。saturate 贡献经 A/B 截图
+         验证显著（侧栏区 diff 均值 17-25/255），不可砍 */
+      backdrop-filter: saturate(1.7);
+      -webkit-backdrop-filter: saturate(1.7);
     }
-    /* 基底薄染：磨砂带一点主题色相（浅：白+冰蓝；深：蓝灰+暖灰）；alpha 压低让彩团透出 */
+    /* 基底薄染近乎为零：保持全透明，只留一丝主题色相 */
     [data-theme="light"] #site .side-glass {
-      background: linear-gradient(160deg, rgba(255, 255, 255, 0.22), rgba(220, 233, 244, 0.08));
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(220, 233, 244, 0.03));
     }
     [data-theme="dark"] #site .side-glass {
-      background: linear-gradient(160deg, rgba(150, 175, 205, 0.13), rgba(110, 110, 108, 0.06));
+      background: linear-gradient(160deg, rgba(150, 175, 205, 0.06), rgba(110, 110, 108, 0.03));
     }
-    /* 边缘折射带：外圈 22px 环带（mask 挖出）二次折射 + 高光描边，玻璃边缘弧度感 */
+    /* 边缘高光带：外圈 22px 环带（mask 挖出）+ 高光描边 + 右缘全高连续微发光（细亮芯+宽晕影）——
+       只有细亮线时中段会被亮背景吃掉形成"断点"（被用户抓到过一次）；
+       不再叠第二个 url() 折射（与基底折射重复计算，省一次全幅滤镜） */
     #site .side-glass::before {
       content: "";
       position: absolute;
@@ -437,19 +439,19 @@
       -webkit-mask-composite: xor;
               mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
               mask-composite: exclude;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      backdrop-filter: url(#lg-refract) blur(4px);
-      -webkit-backdrop-filter: url(#lg-refract) blur(4px);
     }
     [data-theme="light"] #site .side-glass::before {
       box-shadow: inset 0 0 0 1.2px rgba(255, 255, 255, 0.75),
                   inset 0 -18px 32px rgba(255, 255, 255, 0.14),
-                  inset 0 18px 32px rgba(58, 127, 174, 0.05);
+                  inset 0 18px 32px rgba(58, 127, 174, 0.05),
+                  inset -2px 0 6px rgba(255, 255, 255, 0.5),
+                  inset -8px 0 20px rgba(255, 255, 255, 0.22);
     }
     [data-theme="dark"] #site .side-glass::before {
       box-shadow: inset 0 0 0 1.2px rgba(255, 255, 255, 0.45),
-                  inset 0 -18px 32px rgba(123, 180, 224, 0.10);
+                  inset 0 -18px 32px rgba(123, 180, 224, 0.10),
+                  inset -2px 0 6px rgba(255, 255, 255, 0.38),
+                  inset -8px 0 20px rgba(255, 255, 255, 0.16);
     }
     /* 流光：斜向微光缓慢漂移（液态感），深色压暗 */
     #site .side-glass::after {
@@ -466,6 +468,26 @@
       50%      { transform: translate3d(6%, 3%, 0); }
     }
     #site .side-inner { z-index: 1; }
+    /* 圆角立体弧度：mask 只留右上/右下两个角区 + 角部亮边；
+       不叠任何 url() 折射滤镜（闪烁来源，已禁） */
+    #site .side-corners {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      -webkit-mask: radial-gradient(circle 160px at 100% 0%, #000 98%, transparent 100%),
+                    radial-gradient(circle 160px at 100% 100%, #000 98%, transparent 100%);
+              mask: radial-gradient(circle 160px at 100% 0%, #000 98%, transparent 100%),
+                    radial-gradient(circle 160px at 100% 100%, #000 98%, transparent 100%);
+    }
+    [data-theme="light"] #site .side-corners {
+      box-shadow: inset -1.5px 1.5px 3px rgba(255, 255, 255, 0.8),
+                  inset -1.5px -1.5px 3px rgba(255, 255, 255, 0.6);
+    }
+    [data-theme="dark"] #site .side-corners {
+      box-shadow: inset -1.5px 1.5px 3px rgba(255, 255, 255, 0.5),
+                  inset -1.5px -1.5px 3px rgba(255, 255, 255, 0.35);
+    }
 
     /* 左栏个人信息（占位）：挤压时内容升起消失（mistral 同款） */
     #site .sidebar { overflow: hidden; }
@@ -591,21 +613,21 @@
                   inset 0 -1px 0 rgba(58, 127, 174, 0.10),
                   0 8px 9px rgba(58, 127, 174, 0.10);
     }
-    #site .card, #site .post, #site .blog-card {
+    #site .card, #site .post, #site .blog-card, #site .contact-panel {
       transition: transform 0.3s ease, border-color 0.3s, box-shadow 0.3s;
     }
-    /* hover：微微抬起 + 微发光（描边保持亮色不变，避免深色描边造成"变小"错觉） */
-    [data-theme="dark"] #site .card:hover, [data-theme="dark"] #site .post:hover, [data-theme="dark"] #site .blog-card:hover {
-      transform: translateY(-3px);
+    /* hover：微抬 + 缩放 + 阴影加深（描边保持亮色不变，避免"变小"错觉） */
+    [data-theme="dark"] #site .card:hover, [data-theme="dark"] #site .post:hover, [data-theme="dark"] #site .blog-card:hover, [data-theme="dark"] #site .contact-panel:hover {
+      transform: translateY(-3px) scale(1.02);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
-                  0 12px 12px rgba(123, 180, 224, 0.16),
-                  0 0 16px rgba(123, 180, 224, 0.08);
+                  0 14px 18px rgba(123, 180, 224, 0.20),
+                  0 0 20px rgba(123, 180, 224, 0.10);
     }
-    [data-theme="light"] #site .card:hover, [data-theme="light"] #site .post:hover, [data-theme="light"] #site .blog-card:hover {
-      transform: translateY(-3px);
+    [data-theme="light"] #site .card:hover, [data-theme="light"] #site .post:hover, [data-theme="light"] #site .blog-card:hover, [data-theme="light"] #site .contact-panel:hover {
+      transform: translateY(-3px) scale(1.02);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
-                  0 12px 12px rgba(58, 127, 174, 0.14),
-                  0 0 16px rgba(58, 127, 174, 0.08);
+                  0 14px 18px rgba(58, 127, 174, 0.18),
+                  0 0 20px rgba(58, 127, 174, 0.10);
     }
     [data-theme="dark"] #site .card .go:hover { background: var(--accent-2); color: #0b0d10; }
     [data-theme="light"] #site .card .go:hover { background: var(--accent-2); color: #fff; }
@@ -701,42 +723,92 @@
       transition: opacity 0.6s ease;
     }
     body.hero-gone #site .fx-bubbles { opacity: 1; }
-    /* 彩色模糊团：无描边、无 inset 阴影（清晰感来源），色彩为主、边缘靠大半径 blur 化开（kail ls-blob 方向） */
+    /* 球体公共属性：圆形 + 上浮呼吸动画（带轻微压扁回弹的液滴感，transform 合成层零成本） */
     #site .bubble {
       position: absolute;
       border-radius: 50%;
       animation: bubble-float linear infinite;
-      will-change: transform;
       opacity: 0.8;
     }
     [data-theme="dark"] #site .bubble { opacity: 0.7; }
     @keyframes bubble-float {
-      0%   { transform: translateY(0) scale(1); }
-      25%  { transform: translateY(-18px) scale(1.012); }
-      50%  { transform: translateY(-7px) scale(0.991); }
-      75%  { transform: translateY(-22px) scale(1.008); }
-      100% { transform: translateY(0) scale(1); }
+      0%   { transform: translateY(0) scale(1, 1); }
+      25%  { transform: translateY(-18px) scale(1.02, 0.99); }
+      50%  { transform: translateY(-7px) scale(0.99, 1.01); }
+      75%  { transform: translateY(-22px) scale(1.01, 0.985); }
+      100% { transform: translateY(0) scale(1, 1); }
     }
-    /* 布点不变（视口百分比）；蓝/丁香紫为主，b5 一点暖色点缀；blur 随尺寸缩放 */
-    #site .bubble.b1 { width: 420px; height: 420px; top: -6%; left: 52%; animation-duration: 22s; filter: blur(64px);
-      background: radial-gradient(circle, rgba(125, 180, 224, 0.9), rgba(125, 180, 224, 0) 68%); }
-    #site .bubble.b2 { width: 300px; height: 300px; top: 10%; left: 84%; animation-duration: 19s; filter: blur(52px);
-      background: radial-gradient(circle, rgba(179, 158, 238, 0.85), rgba(179, 158, 238, 0) 68%); }
-    #site .bubble.b3 { width: 210px; height: 210px; top: 36%; left: 68%; animation-duration: 14s; filter: blur(40px);
-      background: radial-gradient(circle, rgba(150, 198, 240, 0.85), rgba(150, 198, 240, 0) 68%); }
-    #site .bubble.b4 { width: 350px; height: 350px; top: 46%; left: 6%;  animation-duration: 24s; filter: blur(56px);
-      background: radial-gradient(circle, rgba(141, 163, 235, 0.85), rgba(141, 163, 235, 0) 68%); }
-    #site .bubble.b5 { width: 175px; height: 175px; top: 70%; left: 80%; animation-duration: 12s; filter: blur(36px);
-      background: radial-gradient(circle, rgba(244, 196, 150, 0.8), rgba(244, 196, 150, 0) 68%); }
-    #site .bubble.b6 { width: 140px; height: 140px; top: 80%; left: 15%; animation-duration: 16s; filter: blur(32px);
-      background: radial-gradient(circle, rgba(198, 182, 245, 0.85), rgba(198, 182, 245, 0) 68%); }
-    /* 深色：同色相压深，但保持足够的色彩存在感 */
-    [data-theme="dark"] #site .bubble.b1 { background: radial-gradient(circle, rgba(82, 132, 186, 0.8), rgba(82, 132, 186, 0) 68%); }
-    [data-theme="dark"] #site .bubble.b2 { background: radial-gradient(circle, rgba(134, 108, 202, 0.75), rgba(134, 108, 202, 0) 68%); }
-    [data-theme="dark"] #site .bubble.b3 { background: radial-gradient(circle, rgba(96, 148, 204, 0.75), rgba(96, 148, 204, 0) 68%); }
-    [data-theme="dark"] #site .bubble.b4 { background: radial-gradient(circle, rgba(102, 120, 198, 0.75), rgba(102, 120, 198, 0) 68%); }
-    [data-theme="dark"] #site .bubble.b5 { background: radial-gradient(circle, rgba(216, 150, 82, 0.6), rgba(216, 150, 82, 0) 68%); }
-    [data-theme="dark"] #site .bubble.b6 { background: radial-gradient(circle, rgba(156, 136, 216, 0.75), rgba(156, 136, 216, 0) 68%); }
+    /* 高光立体球（柔亮斑 + 饱和核 + 7 停平滑长尾光晕到 100%）：清晰层球体自身不模糊；
+       亮斑 alpha 别超 0.55——太强会漂白中心、和外围色环形成"断点"（被用户抓到过一次）；
+       布点按视口百分比，蓝/丁香紫为主，b5 一点暖色点缀；
+       b7-b9 布在侧栏玻璃可视条带（照片右侧），保证玻璃覆盖区有清晰球体 */
+    #site .bubble.b1 { width: 420px; height: 420px; top: -6%; left: 52%; animation-duration: 22s;
+      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(96, 165, 224, 0.95), rgba(125, 180, 224, 0.82) 20%, rgba(125, 180, 224, 0.6) 35%, rgba(125, 180, 224, 0.38) 50%, rgba(125, 180, 224, 0.2) 65%, rgba(125, 180, 224, 0.08) 80%, rgba(125, 180, 224, 0) 100%); }
+    #site .bubble.b2 { width: 300px; height: 300px; top: 10%; left: 84%; animation-duration: 19s;
+      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(158, 132, 235, 0.9), rgba(179, 158, 238, 0.78) 20%, rgba(179, 158, 238, 0.56) 35%, rgba(179, 158, 238, 0.35) 50%, rgba(179, 158, 238, 0.18) 65%, rgba(179, 158, 238, 0.07) 80%, rgba(179, 158, 238, 0) 100%); }
+    #site .bubble.b3 { width: 210px; height: 210px; top: 36%; left: 68%; animation-duration: 14s;
+      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(126, 186, 240, 0.9), rgba(150, 198, 240, 0.78) 20%, rgba(150, 198, 240, 0.56) 35%, rgba(150, 198, 240, 0.35) 50%, rgba(150, 198, 240, 0.18) 65%, rgba(150, 198, 240, 0.07) 80%, rgba(150, 198, 240, 0) 100%); }
+    #site .bubble.b4 { width: 350px; height: 350px; top: 46%; left: 6%;  animation-duration: 24s;
+      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(120, 145, 235, 0.9), rgba(141, 163, 235, 0.78) 20%, rgba(141, 163, 235, 0.56) 35%, rgba(141, 163, 235, 0.35) 50%, rgba(141, 163, 235, 0.18) 65%, rgba(141, 163, 235, 0.07) 80%, rgba(141, 163, 235, 0) 100%); }
+    #site .bubble.b5 { width: 175px; height: 175px; top: 70%; left: 80%; animation-duration: 12s;
+      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(244, 186, 120, 0.85), rgba(244, 196, 150, 0.72) 20%, rgba(244, 196, 150, 0.52) 35%, rgba(244, 196, 150, 0.32) 50%, rgba(244, 196, 150, 0.17) 65%, rgba(244, 196, 150, 0.07) 80%, rgba(244, 196, 150, 0) 100%); }
+    #site .bubble.b6 { width: 140px; height: 140px; top: 80%; left: 15%; animation-duration: 16s;
+      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(178, 158, 240, 0.9), rgba(198, 182, 245, 0.78) 20%, rgba(198, 182, 245, 0.56) 35%, rgba(198, 182, 245, 0.35) 50%, rgba(198, 182, 245, 0.18) 65%, rgba(198, 182, 245, 0.07) 80%, rgba(198, 182, 245, 0) 100%); }
+    #site .bubble.b7 { width: 300px; height: 300px; top: 20%; left: 52%; animation-duration: 18s;
+      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(126, 186, 240, 0.9), rgba(150, 198, 240, 0.78) 20%, rgba(150, 198, 240, 0.56) 35%, rgba(150, 198, 240, 0.35) 50%, rgba(150, 198, 240, 0.18) 65%, rgba(150, 198, 240, 0.07) 80%, rgba(150, 198, 240, 0) 100%); }
+    #site .bubble.b8 { width: 260px; height: 260px; top: 46%; left: 56%; animation-duration: 21s;
+      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(158, 132, 235, 0.9), rgba(179, 158, 238, 0.78) 20%, rgba(179, 158, 238, 0.56) 35%, rgba(179, 158, 238, 0.35) 50%, rgba(179, 158, 238, 0.18) 65%, rgba(179, 158, 238, 0.07) 80%, rgba(179, 158, 238, 0) 100%); }
+    #site .bubble.b9 { width: 200px; height: 200px; top: 74%; left: 49%; animation-duration: 13s;
+      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(96, 165, 224, 0.95), rgba(125, 180, 224, 0.82) 20%, rgba(125, 180, 224, 0.6) 35%, rgba(125, 180, 224, 0.38) 50%, rgba(125, 180, 224, 0.2) 65%, rgba(125, 180, 224, 0.08) 80%, rgba(125, 180, 224, 0) 100%); }
+    /* 双层球体：清晰层 mask 只留侧栏覆盖区（--sbw 左侧，80px 羽化）；
+       模糊层 mask 只留侧栏以外区域并逐球 blur——侧栏收拢（--sbw→0）后全屏恢复模糊。
+       不用任何 SVG url() 位移滤镜：大面积动画图层上它是合成器 desync/闪烁的根源 */
+    #site .fx-bubbles {
+      -webkit-mask: linear-gradient(to right, black calc(var(--sbw, 0px) - 40px), transparent calc(var(--sbw, 0px) + 40px));
+              mask: linear-gradient(to right, black calc(var(--sbw, 0px) - 40px), transparent calc(var(--sbw, 0px) + 40px));
+    }
+    #site .fx-bubbles.blurred {
+      -webkit-mask: linear-gradient(to right, transparent calc(var(--sbw, 0px) - 40px), black calc(var(--sbw, 0px) + 40px));
+              mask: linear-gradient(to right, transparent calc(var(--sbw, 0px) - 40px), black calc(var(--sbw, 0px) + 40px));
+    }
+    #site .fx-bubbles.blurred .bubble.b1 { filter: blur(64px); }
+    #site .fx-bubbles.blurred .bubble.b2 { filter: blur(52px); }
+    #site .fx-bubbles.blurred .bubble.b3 { filter: blur(40px); }
+    #site .fx-bubbles.blurred .bubble.b4 { filter: blur(56px); }
+    #site .fx-bubbles.blurred .bubble.b5 { filter: blur(36px); }
+    #site .fx-bubbles.blurred .bubble.b6 { filter: blur(32px); }
+    #site .fx-bubbles.blurred .bubble.b7 { filter: blur(48px); }
+    #site .fx-bubbles.blurred .bubble.b8 { filter: blur(44px); }
+    #site .fx-bubbles.blurred .bubble.b9 { filter: blur(36px); }
+
+    /* 深色：同色相压深，但保持足够的色彩存在感；同样 7 停平滑长尾，亮斑 0.4 */
+    [data-theme="dark"] #site .bubble.b1 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(74, 124, 178, 0.85), rgba(82, 132, 186, 0.72) 20%, rgba(82, 132, 186, 0.52) 35%, rgba(82, 132, 186, 0.32) 50%, rgba(82, 132, 186, 0.17) 65%, rgba(82, 132, 186, 0.07) 80%, rgba(82, 132, 186, 0) 100%); }
+    [data-theme="dark"] #site .bubble.b2 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(122, 96, 190, 0.8), rgba(134, 108, 202, 0.68) 20%, rgba(134, 108, 202, 0.48) 35%, rgba(134, 108, 202, 0.3) 50%, rgba(134, 108, 202, 0.16) 65%, rgba(134, 108, 202, 0.06) 80%, rgba(134, 108, 202, 0) 100%); }
+    [data-theme="dark"] #site .bubble.b3 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(88, 140, 196, 0.8), rgba(96, 148, 204, 0.68) 20%, rgba(96, 148, 204, 0.48) 35%, rgba(96, 148, 204, 0.3) 50%, rgba(96, 148, 204, 0.16) 65%, rgba(96, 148, 204, 0.06) 80%, rgba(96, 148, 204, 0) 100%); }
+    [data-theme="dark"] #site .bubble.b4 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(94, 112, 186, 0.8), rgba(102, 120, 198, 0.68) 20%, rgba(102, 120, 198, 0.48) 35%, rgba(102, 120, 198, 0.3) 50%, rgba(102, 120, 198, 0.16) 65%, rgba(102, 120, 198, 0.06) 80%, rgba(102, 120, 198, 0) 100%); }
+    [data-theme="dark"] #site .bubble.b5 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(206, 142, 74, 0.6), rgba(216, 150, 82, 0.5) 20%, rgba(216, 150, 82, 0.36) 35%, rgba(216, 150, 82, 0.22) 50%, rgba(216, 150, 82, 0.12) 65%, rgba(216, 150, 82, 0.05) 80%, rgba(216, 150, 82, 0) 100%); }
+    [data-theme="dark"] #site .bubble.b6 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(146, 126, 206, 0.8), rgba(156, 136, 216, 0.68) 20%, rgba(156, 136, 216, 0.48) 35%, rgba(156, 136, 216, 0.3) 50%, rgba(156, 136, 216, 0.16) 65%, rgba(156, 136, 216, 0.06) 80%, rgba(156, 136, 216, 0) 100%); }
+    [data-theme="dark"] #site .bubble.b7 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(88, 140, 196, 0.8), rgba(96, 148, 204, 0.68) 20%, rgba(96, 148, 204, 0.48) 35%, rgba(96, 148, 204, 0.3) 50%, rgba(96, 148, 204, 0.16) 65%, rgba(96, 148, 204, 0.06) 80%, rgba(96, 148, 204, 0) 100%); }
+    [data-theme="dark"] #site .bubble.b8 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(122, 96, 190, 0.8), rgba(134, 108, 202, 0.68) 20%, rgba(134, 108, 202, 0.48) 35%, rgba(134, 108, 202, 0.3) 50%, rgba(134, 108, 202, 0.16) 65%, rgba(134, 108, 202, 0.06) 80%, rgba(134, 108, 202, 0) 100%); }
+    [data-theme="dark"] #site .bubble.b9 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
+                  radial-gradient(circle, rgba(74, 124, 178, 0.85), rgba(82, 132, 186, 0.72) 20%, rgba(82, 132, 186, 0.52) 35%, rgba(82, 132, 186, 0.32) 50%, rgba(82, 132, 186, 0.17) 65%, rgba(82, 132, 186, 0.07) 80%, rgba(82, 132, 186, 0) 100%); }
 
     /* Blog 横滚卡片流：原生横向滚动 + scroll-snap，隐藏滚动条 */
     #site .blog-stream {
@@ -899,6 +971,59 @@
       #site .contact-panel { grid-template-columns: 1fr; gap: 1.75rem; padding: 1.5rem; }
       #site .blog-card { flex-basis: 210px; }
     }
+
+    /* 卡片圆润圆角（保留）：右上/右下角加大；玻璃底纹维持原配方 */
+    #site .card, #site .blog-card, #site .fan-card, #site .contact-panel {
+      border-radius: 20px 36px 20px 36px;
+    }
+
+    /* 勾线装饰：右上区域低透明度缓转，科技感点缀 */
+    #site .fx-lines {
+      position: absolute;
+      top: 6rem;
+      right: -140px;
+      width: 560px;
+      height: 560px;
+      z-index: 0;
+      pointer-events: none;
+      color: var(--accent-2);
+      opacity: 0.16;
+      animation: fx-lines-spin 90s linear infinite;
+    }
+    [data-theme="dark"] #site .fx-lines { opacity: 0.13; }
+    @keyframes fx-lines-spin { to { transform: rotate(360deg); } }
+    @media (max-width: 1023px) { #site .fx-lines { display: none; } }
+
+    /* 动效微粒：固定视口，进入正文后淡入，缓慢上浮闪烁 */
+    #site .fx-dots {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    body.hero-gone #site .fx-dots { opacity: 1; }
+    #site .dot {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      animation: dot-float linear infinite;
+    }
+    @keyframes dot-float {
+      0%, 100% { transform: translateY(0); opacity: 0.15; }
+      50%      { transform: translateY(-36px); opacity: 0.65; }
+    }
+    #site .dot.d1 { top: 22%; left: 58%; animation-duration: 11s; }
+    #site .dot.d2 { top: 34%; left: 76%; animation-duration: 14s; animation-delay: -3s; }
+    #site .dot.d3 { top: 48%; left: 62%; animation-duration: 12s; animation-delay: -6s; }
+    #site .dot.d4 { top: 18%; left: 88%; animation-duration: 16s; animation-delay: -2s; }
+    #site .dot.d5 { top: 62%; left: 84%; animation-duration: 13s; animation-delay: -8s; }
+    #site .dot.d6 { top: 74%; left: 55%; animation-duration: 15s; animation-delay: -5s; }
+    #site .dot.d7 { top: 40%; left: 90%; animation-duration: 10s; animation-delay: -4s; }
+    #site .dot.d8 { top: 84%; left: 70%; animation-duration: 17s; animation-delay: -9s; }
   </style>
 </head>
 <body>
@@ -907,22 +1032,11 @@
     <div class="scroll-hint"><span>SCROLL</span><span class="chevrons"><i></i><i></i></span></div>
   </section>
   <div id="site">
-  <!-- 液态玻璃折射滤镜（侧栏用）：噪波位移折射背景，SMIL 驱动缓慢流动 -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <defs>
-      <filter id="lg-refract" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.011 0.017" numOctaves="2" seed="7" result="noise">
-          <animate attributeName="baseFrequency" dur="22s" values="0.011 0.017;0.015 0.021;0.011 0.017" repeatCount="indefinite"/>
-        </feTurbulence>
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="40" xChannelSelector="R" yChannelSelector="G"/>
-      </filter>
-    </defs>
-  </svg>
   <!-- 背景特效层：流动渐变场（垫在内容下，顶部接缝区遮蔽） -->
   <div class="fx-bg" aria-hidden="true">
     <div class="fx-gradient"></div>
   </div>
-  <!-- 气泡层：固定视口不随滚动，进入正文后淡入 -->
+  <!-- 气泡层（清晰层）：固定视口不随滚动，进入正文后淡入；mask 只留侧栏覆盖区 -->
   <div class="fx-bubbles" aria-hidden="true">
     <i class="bubble b1"></i>
     <i class="bubble b2"></i>
@@ -930,6 +1044,38 @@
     <i class="bubble b4"></i>
     <i class="bubble b5"></i>
     <i class="bubble b6"></i>
+    <i class="bubble b7"></i>
+    <i class="bubble b8"></i>
+    <i class="bubble b9"></i>
+  </div>
+  <!-- 模糊层气泡：与清晰层同位同步，逐球 blur，mask 只显示侧栏以外区域 -->
+  <div class="fx-bubbles blurred" aria-hidden="true">
+    <i class="bubble b1"></i>
+    <i class="bubble b2"></i>
+    <i class="bubble b3"></i>
+    <i class="bubble b4"></i>
+    <i class="bubble b5"></i>
+    <i class="bubble b6"></i>
+    <i class="bubble b7"></i>
+    <i class="bubble b8"></i>
+    <i class="bubble b9"></i>
+  </div>
+  <!-- 勾线装饰：轨道环 + 六边形，右上区域，缓慢旋转（科技感点缀，低透明度不抢戏） -->
+  <svg class="fx-lines" viewBox="0 0 600 600" aria-hidden="true">
+    <g fill="none" stroke="currentColor" stroke-width="1">
+      <circle cx="300" cy="300" r="180" opacity="0.55"/>
+      <circle cx="300" cy="300" r="245" opacity="0.3" stroke-dasharray="3 9"/>
+      <polygon points="300,140 438,220 438,380 300,460 162,380 162,220" opacity="0.4"/>
+      <path d="M300 120v56M300 424v56M122 300h56M422 300h56" opacity="0.5"/>
+      <circle cx="300" cy="120" r="4" fill="currentColor" stroke="none"/>
+      <circle cx="478" cy="300" r="3" fill="currentColor" stroke="none"/>
+      <circle cx="176" cy="410" r="2.5" fill="currentColor" stroke="none"/>
+    </g>
+  </svg>
+  <!-- 动效微粒：固定视口，缓慢上浮闪烁 -->
+  <div class="fx-dots" aria-hidden="true">
+    <i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i>
+    <i class="dot d5"></i><i class="dot d6"></i><i class="dot d7"></i><i class="dot d8"></i>
   </div>
 <!-- mobile topbar -->
   <div class="topbar">
@@ -950,6 +1096,7 @@
     <!-- sidebar -->
     <aside class="sidebar">
       <div class="side-glass" aria-hidden="true"></div>
+      <div class="side-corners" aria-hidden="true"></div>
       <div class="side-inner">
         <h1 class="side-name">JAIME</h1>
         <div class="side-photo"></div>
@@ -1307,9 +1454,11 @@
         applyInner(curW);
         if (Math.abs(targetW - curW) > 0.4) {
           sidebar.style.width = curW + 'px';
+          document.documentElement.style.setProperty('--sbw', curW + 'px');
           requestAnimationFrame(tick);
         } else {
           sidebar.style.width = targetW + 'px';
+          document.documentElement.style.setProperty('--sbw', targetW + 'px');
           driving = false;
         }
       };
@@ -1326,6 +1475,7 @@
           sidebar.style.width = '';
           if (inner) { inner.style.transform = ''; inner.style.opacity = ''; }
           targetW = curW = BASE;
+          document.documentElement.style.setProperty('--sbw', '0px');
           return;
         }
         measure();
@@ -1333,6 +1483,7 @@
           // 首次对齐直接到位，不播动画（避免进入正文时左栏跳一下）
           curW = targetW;
           sidebar.style.width = targetW + 'px';
+          document.documentElement.style.setProperty('--sbw', targetW + 'px');
           applyInner(targetW);
           return;
         }
