@@ -101,10 +101,10 @@
       return mix(0.08, 0.0, (r - 0.80) / 0.20);
     }
     // 模糊变体（等效 CSS 逐球 blur 32-64px）：高斯宽尾雾团——右侧非玻璃区要"雾化柔团"
-    // 宽度 1.7→1.2（用户新指令"再加一些模糊"，覆盖旧平衡点；峰值 0.85 不动；
-    // 更宽更平的尾部同时让云团边缘融进亮场更丝滑——修"白光突然变小"断点）
+    // 宽度 1.7→1.2→0.9（用户连续新指令：先"再加一些模糊"，后"球体边缘虚化"——
+    // 更宽更平的尾部让球体轮廓融进背景；峰值 0.85 不动）
     float haloShapeBlur(float r) {
-      return exp(-(r * 1.2) * (r * 1.2)) * 0.85;
+      return exp(-(r * 0.9) * (r * 0.9)) * 0.85;
     }
 
     void main() {
@@ -136,8 +136,9 @@
         if (r > 3.75) continue; // 左区 1.5× 放大后影响域到 2.5×1.5（清晰变体实际到 1.5）
         // 左区球体整体放大 2.0×（用户：同一球左右大小差过大）。
         // 1.5× 后用户要"清晰一倍"（aSharp 伽马 2.0），伽马让可见光晕缩到 ~0.75×——
-        // 放大倍率同步 1.5→2.0 抵消，清晰度不变、可见尺寸回到与右区云团相当
-        float rEff = mix(r / 2.0, r, blurZone);
+        // 放大倍率同步 1.5→2.0 抵消，清晰度不变、可见尺寸回到与右区云团相当；
+        // 右区 r/0.88：整幅高斯模糊会糊大球体，半径补偿缩 12%（用户点名"给球体大小补偿"）
+        float rEff = mix(r / 2.0, r / 0.88, blurZone);
         // 清晰/模糊变体混合
         // aSharp 伽马 2.0 锐化（用户：左区放大后不够清晰，"调清晰一倍"——
         // 峰值不变、中段陡降，球缘更干脆；右区 aBlur 不受影响）
@@ -169,8 +170,10 @@
           }
           aBlur = mix(aBlur, sum / wsum, blurZone);
         }
-        // 雾化区 alpha 略增（+12%）：补拖影核归一化造成的峰值损失，提升雾团色彩存在
-        float a = mix(aSharp, aBlur, blurZone) * uCoreA[i] * elemA * (1.0 + blurZone * 0.12);
+        // 雾化区 alpha 略增（+12%）：补拖影核归一化造成的峰值损失，提升雾团色彩存在；
+        // 亮度：深色 ×0.25（两次"再暗 50%"累计）、浅色 ×0.5（用户点名"当前亮度降低50%"）
+        float a = mix(aSharp, aBlur, blurZone) * uCoreA[i] * elemA * (1.0 + blurZone * 0.12)
+                * ((uTheme < 0.5) ? 0.5 : 0.25);
         if (a < 0.004) continue;
         // 边缘折射：按光晕梯度位移背景采样（液态透镜）
         float g = haloShape(max(rEff - 0.03, 0.0)) - haloShape(min(rEff + 0.03, 1.0));
@@ -192,11 +195,43 @@
         float bmax = max(boosted.r, max(boosted.g, boosted.b));
         if (bmax > 1.0) boosted /= bmax;
         bcol = mix(bcol, boosted, blurZone * (1.0 - smoothstep(0.4, 1.1, r)));
+        // 浅色主题：对比度 -40%（经典公式 (c-0.5)×0.6+0.5，用户点名"对比度降低40%"）
+        bcol = mix(bcol, (bcol - 0.5) * 0.6 + 0.5, 1.0 - uTheme);
         // 液态透镜：球体内背景先按折射偏移（behind），再叠球色
         col = mix(behind, bcol, a);
       }
 
       gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  const BLUR = `
+    precision highp float;
+    uniform sampler2D uTex;   // 输入纹理（H pass=A；V+合成 pass=B）
+    uniform sampler2D uTexA;  // 原始场景（合成 pass 左区清晰源）
+    uniform vec2 uRes;      // CSS px
+    uniform float uDpr;
+    uniform vec2 uStep;     // 采样步长向量（设备 px，含方向）
+    uniform float uSbw;
+    uniform float uComposite; // 0 = 纯模糊写回；1 = 模糊 + 分区合成
+    void main() {
+      vec2 texel = 1.0 / (uRes * uDpr);
+      vec2 uv = gl_FragCoord.xy * texel;
+      // 9-tap 二项式权重 [1,8,28,56,70,56,28,8,1]/256，步长 10 CSS px → 有效 σ≈14px
+      vec3 c = texture2D(uTex, uv).rgb * 0.273438;
+      c += texture2D(uTex, uv + uStep * texel).rgb * 0.21875;
+      c += texture2D(uTex, uv - uStep * texel).rgb * 0.21875;
+      c += texture2D(uTex, uv + uStep * texel * 2.0).rgb * 0.109375;
+      c += texture2D(uTex, uv - uStep * texel * 2.0).rgb * 0.109375;
+      c += texture2D(uTex, uv + uStep * texel * 3.0).rgb * 0.03125;
+      c += texture2D(uTex, uv - uStep * texel * 3.0).rgb * 0.03125;
+      c += texture2D(uTex, uv + uStep * texel * 4.0).rgb * 0.00390625;
+      c += texture2D(uTex, uv - uStep * texel * 4.0).rgb * 0.00390625;
+      if (uComposite < 0.5) { gl_FragColor = vec4(c, 1.0); return; }
+      vec2 css = gl_FragCoord.xy / uDpr;
+      float blurZone = smoothstep(uSbw - 40.0, uSbw + 40.0, css.x); // 边界递增（教训）
+      vec3 sharp = texture2D(uTexA, uv).rgb;
+      gl_FragColor = vec4(mix(sharp, c, blurZone), 1.0);
     }
   `;
 
@@ -210,29 +245,37 @@
     }
     return s;
   };
-  const vs = compile(gl.VERTEX_SHADER, VERT);
-  const fs = compile(gl.FRAGMENT_SHADER, FRAG);
-  if (!vs || !fs) return;
-  const prog = gl.createProgram();
-  gl.attachShader(prog, vs);
-  gl.attachShader(prog, fs);
-  gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-    console.error('fx-gl link:', gl.getProgramInfoLog(prog));
-    return;
-  }
-  gl.useProgram(prog);
+  const link = (vsSrc, fsSrc) => {
+    const vs = compile(gl.VERTEX_SHADER, vsSrc);
+    const fs = compile(gl.FRAGMENT_SHADER, fsSrc);
+    if (!vs || !fs) return null;
+    const p = gl.createProgram();
+    gl.attachShader(p, vs);
+    gl.attachShader(p, fs);
+    gl.bindAttribLocation(p, 0, 'aPos'); // 两 program 统一 attribute 位置
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+      console.error('fx-gl link:', gl.getProgramInfoLog(p));
+      return null;
+    }
+    return p;
+  };
+  const progScene = link(VERT, FRAG);
+  const progBlur = link(VERT, BLUR);
+  if (!progScene || !progBlur) return;
 
   const buf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-  const aPos = gl.getAttribLocation(prog, 'aPos');
-  gl.enableVertexAttribArray(aPos);
-  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
   const U = {};
   for (const n of ['uRes', 'uDpr', 'uTime', 'uSbw', 'uTheme', 'uScroll', 'uBg', 'uPos', 'uCore', 'uHalo', 'uCoreA'])
-    U[n] = gl.getUniformLocation(prog, n);
+    U[n] = gl.getUniformLocation(progScene, n);
+  const B = {};
+  for (const n of ['uTex', 'uTexA', 'uRes', 'uDpr', 'uStep', 'uSbw', 'uComposite'])
+    B[n] = gl.getUniformLocation(progBlur, n);
 
   // 6 球配置（与 CSS 布点/时长一致；已删 b3/b5/b7——右区叠放太密被用户点名）：[left%, top%, size px, dur s]
   const POS = [
@@ -254,9 +297,11 @@
   };
   const flat = (arr, k) => { const out = []; for (const c of arr) out.push(c[0] / 255 * (k || 1), c[1] / 255 * (k || 1), c[2] / 255 * (k || 1)); return out; };
 
+  gl.useProgram(progScene);
   const setTheme = () => {
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
     const p = dark ? DARK : LIGHT;
+    gl.useProgram(progScene);
     gl.uniform1f(U.uTheme, dark ? 1 : 0);
     gl.uniform3fv(U.uCore, flat(p.core));
     gl.uniform3fv(U.uHalo, flat(p.halo));
@@ -268,11 +313,31 @@
   new MutationObserver(setTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   const DPR = () => Math.min(window.devicePixelRatio || 1, 2);
+  // 离屏渲染目标（场景 A + 中间模糊 B），resize 时重建
+  const makeTarget = (w, h) => {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return { tex, fbo };
+  };
+  let targetA = null, targetB = null;
   const resize = () => {
     const d = DPR();
     canvas.width = Math.round(window.innerWidth * d);
     canvas.height = Math.round(window.innerHeight * d);
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (targetA) {
+      gl.deleteTexture(targetA.tex); gl.deleteFramebuffer(targetA.fbo);
+      gl.deleteTexture(targetB.tex); gl.deleteFramebuffer(targetB.fbo);
+    }
+    targetA = makeTarget(canvas.width, canvas.height);
+    targetB = makeTarget(canvas.width, canvas.height);
   };
   resize();
   window.addEventListener('resize', resize);
@@ -287,13 +352,48 @@
     if (document.hidden) return;
     if (!document.body.classList.contains('hero-gone')) return; // hero 阶段不渲染（opacity 0 且省 GPU）
     const d = DPR();
-    gl.uniform2f(U.uRes, canvas.width / d, canvas.height / d);
+    const W = canvas.width, H = canvas.height;
+    const sbw = parseFloat(sbwEl.style.getPropertyValue('--sbw')) || 0;
+    const sbwEff = sbw * (window.matchMedia('(min-width: 1024px)').matches ? 1 : 0);
+
+    // pass 1：场景 → A
+    gl.bindFramebuffer(gl.FRAMEBUFFER, targetA.fbo);
+    gl.viewport(0, 0, W, H);
+    gl.useProgram(progScene);
+    gl.uniform2f(U.uRes, W / d, H / d);
     gl.uniform1f(U.uDpr, d);
     gl.uniform1f(U.uTime, (now - t0) / 1000);
-    const sbw = parseFloat(sbwEl.style.getPropertyValue('--sbw')) || 0;
-    gl.uniform1f(U.uSbw, sbw * (window.matchMedia('(min-width: 1024px)').matches ? 1 : 0));
+    gl.uniform1f(U.uSbw, sbwEff);
     gl.uniform1f(U.uScroll, window.scrollY || 0);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    // pass 2：水平高斯 A → B（整幅右区画面模糊，用户点名）
+    gl.bindFramebuffer(gl.FRAMEBUFFER, targetB.fbo);
+    gl.viewport(0, 0, W, H);
+    gl.useProgram(progBlur);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, targetA.tex);
+    gl.uniform1i(B.uTex, 0);
+    gl.uniform2f(B.uRes, W / d, H / d);
+    gl.uniform1f(B.uDpr, d);
+    gl.uniform2f(B.uStep, 10 * d, 0);
+    gl.uniform1f(B.uComposite, 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    // pass 3：垂直高斯 + 分区合成 → 屏幕（左区取 A 清晰源，右区取模糊）
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, W, H);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, targetB.tex);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, targetA.tex);
+    gl.uniform1i(B.uTex, 0);
+    gl.uniform1i(B.uTexA, 1);
+    gl.uniform2f(B.uStep, 0, 10 * d);
+    gl.uniform1f(B.uComposite, 1);
+    gl.uniform1f(B.uSbw, sbwEff);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.activeTexture(gl.TEXTURE0);
   };
   requestAnimationFrame(frame);
 })();
