@@ -400,15 +400,72 @@
     }
     #site > * { position: relative; z-index: 1; }
 
-    /* 侧边栏 */
-    [data-theme="dark"] #site .sidebar {
-      background: #6e6e6c;
-      border-right: 1px solid var(--border);
+    /* 侧边栏：苹果级液态玻璃——薄磨砂透出背景彩团/渐变场，边缘弧度+折射形变，液态流动 */
+    #site .sidebar {
+      border-radius: 0 28px 28px 0;
+      background: transparent;
+      box-shadow: 16px 0 48px rgba(31, 42, 55, 0.10);
     }
-    [data-theme="light"] #site .sidebar {
-      background: #dce9f4;
-      border-right: 1px solid rgba(194, 106, 30, 0.45);
+    [data-theme="dark"] #site .sidebar { box-shadow: 16px 0 48px rgba(0, 0, 0, 0.40); }
+    #site .side-glass {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      overflow: hidden;
+      pointer-events: none;
+      /* 兜底纯模糊在前，url 折射在后（url 无效时整行被丢弃，自动回退上行） */
+      backdrop-filter: blur(26px) saturate(1.7);
+      -webkit-backdrop-filter: blur(26px) saturate(1.7);
+      backdrop-filter: url(#lg-refract) blur(26px) saturate(1.7);
+      -webkit-backdrop-filter: url(#lg-refract) blur(26px) saturate(1.7);
     }
+    /* 基底薄染：磨砂带一点主题色相（浅：白+冰蓝；深：蓝灰+暖灰）；alpha 压低让彩团透出 */
+    [data-theme="light"] #site .side-glass {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.22), rgba(220, 233, 244, 0.08));
+    }
+    [data-theme="dark"] #site .side-glass {
+      background: linear-gradient(160deg, rgba(150, 175, 205, 0.13), rgba(110, 110, 108, 0.06));
+    }
+    /* 边缘折射带：外圈 22px 环带（mask 挖出）二次折射 + 高光描边，玻璃边缘弧度感 */
+    #site .side-glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 22px;
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+              mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+              mask-composite: exclude;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: url(#lg-refract) blur(4px);
+      -webkit-backdrop-filter: url(#lg-refract) blur(4px);
+    }
+    [data-theme="light"] #site .side-glass::before {
+      box-shadow: inset 0 0 0 1.2px rgba(255, 255, 255, 0.75),
+                  inset 0 -18px 32px rgba(255, 255, 255, 0.14),
+                  inset 0 18px 32px rgba(58, 127, 174, 0.05);
+    }
+    [data-theme="dark"] #site .side-glass::before {
+      box-shadow: inset 0 0 0 1.2px rgba(255, 255, 255, 0.45),
+                  inset 0 -18px 32px rgba(123, 180, 224, 0.10);
+    }
+    /* 流光：斜向微光缓慢漂移（液态感），深色压暗 */
+    #site .side-glass::after {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      border-radius: inherit;
+      background: linear-gradient(115deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.04) 28%, transparent 50%);
+      animation: side-sheen 16s ease-in-out infinite;
+    }
+    [data-theme="dark"] #site .side-glass::after { opacity: 0.35; }
+    @keyframes side-sheen {
+      0%, 100% { transform: translate3d(-6%, -3%, 0); }
+      50%      { transform: translate3d(6%, 3%, 0); }
+    }
+    #site .side-inner { z-index: 1; }
 
     /* 左栏个人信息（占位）：挤压时内容升起消失（mistral 同款） */
     #site .sidebar { overflow: hidden; }
@@ -850,6 +907,17 @@
     <div class="scroll-hint"><span>SCROLL</span><span class="chevrons"><i></i><i></i></span></div>
   </section>
   <div id="site">
+  <!-- 液态玻璃折射滤镜（侧栏用）：噪波位移折射背景，SMIL 驱动缓慢流动 -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="lg-refract" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.011 0.017" numOctaves="2" seed="7" result="noise">
+          <animate attributeName="baseFrequency" dur="22s" values="0.011 0.017;0.015 0.021;0.011 0.017" repeatCount="indefinite"/>
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="40" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
   <!-- 背景特效层：流动渐变场（垫在内容下，顶部接缝区遮蔽） -->
   <div class="fx-bg" aria-hidden="true">
     <div class="fx-gradient"></div>
@@ -881,6 +949,7 @@
   <div class="layout">
     <!-- sidebar -->
     <aside class="sidebar">
+      <div class="side-glass" aria-hidden="true"></div>
       <div class="side-inner">
         <h1 class="side-name">JAIME</h1>
         <div class="side-photo"></div>

@@ -12,7 +12,7 @@
 - 线上地址（GitHub Pages）：https://jaime-gu.github.io/portfolio-hero/
 - 本地预览：`cd portfolio-hero && python3 -m http.server 8931` → http://localhost:8931
   - **必须走 http 服务**，file:// 打开时 Chrome 会拦截 WebGL 纹理加载
-- **部署状态**：线上已部署到 `2c8e218`。工作区有**未提交改动**（阴影缩 1/3、About Myself 换 Bebas Neue+翻转、阶段式收拢、hover 去深色描边、**气泡→彩色模糊团、Friends 扇形卡→Contact 分栏玻璃面板**）——下一轮用户说"上线"时先推这批
+- **部署状态**：线上已部署到 `d25f523`（2026-09-10，含阴影缩 1/3、About Myself 换 Bebas Neue+翻转、阶段式收拢、hover 去深色描边、气泡→彩色模糊团、Friends→Contact 分栏玻璃面板、扇形卡迁入 Projects 并放大调平间距）。工作区有**未提交改动**（左栏苹果级液态玻璃，待办 3）——下一轮用户说"上线"时先推这批
 
 ## 2. 文件结构
 
@@ -49,7 +49,7 @@ portfolio-hero/
 ### 3.3 左栏（sidebar）——mistral 同款交互
 
 - **宽度驱动**（index.html 底部脚本）：`collapseP`（0→1，滚轮累计驱动，见 3.4）→ 左栏宽度 `65vw*(1-collapseP)`，从 65vw（从右往左 35%）收拢到 0。rAF 插值 0.12 平滑跟随。首次对齐直接到位不播动画（`curW=null` 模式，防进入时跳一下）。仅桌面端（`min-width: 1024px`）
-- **颜色**：浅色统一 `#dce9f4`、深色统一 `#6e6e6c`（都无渐变，与顶部过渡带颜色一致，无横向接缝）。深色 `border-right: 1px solid var(--border)`（琥珀细线）；浅色 `border-right: 1px solid rgba(194,106,30,0.45)`（橙线，用户指定）
+- **背景（2026-09-10 升级为苹果级液态玻璃，待办 3 完成）**：不再是纯色，改为 `.side-glass` 层（absolute inset 0，pointer-events none）：`backdrop-filter: url(#lg-refract) blur(26px) saturate(1.7)`（**url() 前有纯 blur 兜底行**，url 无效时自动回退）；`#lg-refract` 是内联 SVG 滤镜（`feTurbulence` 噪波 + `feDisplacementMap` scale 40 位移折射背景，SMIL 22s 缓慢流动 = 液态感），定义在 #site 开头。基底薄染压低 alpha 让彩团透出（浅：白 0.22/冰蓝 0.08；深：蓝灰 0.13/暖灰 0.06）。**边缘弧度+折射带**：侧栏 `border-radius: 0 28px 28px 0` + `::before` 外圈 22px 环带（mask content-box exclude 挖出）二次折射 + inset 高光描边（浅 0.75/深 0.45 白）+ `::after` 斜向流光 16s 漂移（深色 opacity 0.35）。外侧投影 `16px 0 48px`。原琥珀/橙色 border-right 已随纯色背景一并移除（被玻璃高光描边取代）。`.side-inner` 加 `z-index: 1` 压在玻璃层上，文字不受折射影响。实测 Chrome 支持 `backdrop-filter: url()`（红圆边缘扭曲验证），满幅玻璃 121fps
 - **内容升起消失**：`.side-inner` 随同一插值进度 `translateY(-55vh)` + `opacity` 淡出，sidebar `overflow: hidden` 裁切——mistral 同款挤压退场
 - **内容布局**（Henri 编辑排版风，全部占位）：
   - `.side-name`「JAIME」：`clamp(7rem, 11vw, 13rem)`、weight 900、`letter-spacing: 0.16em`（2026-09-10 用户要求：从 -0.08em 压缩改为 +0.16em 撑开，"间距扩大一倍"——注意是撑开不是收紧，曾误判为 -0.16em 被纠正）、top 0（从 1vh 上移，缩小顶部间距）、left -0.03em（顶住左缘微出血）
@@ -119,14 +119,11 @@ portfolio-hero/
 15. **hover 改描边颜色会造"变小"错觉**：hover 时把描边从亮色改成深色彩边，视觉上边缘内收、元素像变小了（实际是错觉，尺寸没变）。hover 反馈要保持描边一致，只用位移+辉光
 16. **玻璃透明度是双向的**：太实（alpha 高）像白板、看不到背景气泡；太透（alpha 低）失去玻璃质感。验证过的平衡点（气泡隐约透出）：浅色 `rgba(255,255,255,0.22)` + 白渐变 0.50/0.15；深色 `rgba(150,175,205,0.28)` + 白渐变 0.10/0.03。历经"透明度+20%"（太实被否）和"要能看到圆球"（回收）两轮后定稿，别再往实里加
 17. **webbridge evaluate 里滚动归零**：`window.scrollTo({top:0,behavior:"instant"})` 不可靠（`html { scroll-behavior: smooth }` 会把数值型 scrollTo 变成平滑滚动，中途还会被 synthetic wheel 打断卡死）。用 `document.scrollingElement.scrollTop = 0` 直接赋值，同步即时到位
+18. **`backdrop-filter: url(#svg)` 折射可用但要验证+兜底**：Chrome 支持 backdrop-filter 引用内联 SVG 滤镜（feTurbulence+feDisplacementMap 做背景折射，SMIL animate baseFrequency 做液态流动）。注意三点：(a) 同一声明里 url() 若不被支持会整行作废——必须先写一行纯 blur 兜底再写 url 增强行；(b) getComputedStyle 只能证明语法被接受，是否真渲染要截图验证——用纯色圆（背景平滑时位移不可见）看边缘扭曲；(c) 折射位移只作用于背景，上层文字内容不受影响，文字层记得 z-index 压上去
 
 ## 6. 待办 / 下一步方向
 
-> 第 1、2 项已完成（2026-09-10）：Friends 扇形卡区已改为 Contact 分栏玻璃面板，气泡已改为彩色模糊团。第 3 项记录在案，**用户明确说做的时候再做**，不要提前动。
-
-### 暂缓（用户明确说做才做）
-
-3. **左栏背景液态玻璃**：把左侧 sidebar 的背景也做成液态玻璃效果，但**必须和右侧卡片的液态玻璃不一样**（用户要求差异化设计，不能照搬卡片配方）。目前侧栏是纯色（浅 `#dce9f4` / 深 `#6e6e6c`）。⚠️ 用户没发话前不要动
+> 第 1、2、3 项均已完成（2026-09-10）：Friends 扇形卡区改为 Contact 分栏玻璃面板、气泡改为彩色模糊团、**左栏升级为苹果级液态玻璃（url(#lg-refract) 位移折射 + 边缘环带 + 圆角高光 + 流光，与卡片配方完全不同）**。
 
 ### 长期事项（用户给素材/发话后推进）
 
