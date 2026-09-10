@@ -20,6 +20,24 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
+    /* Anton（Google Fonts，OFL 免费）本地化：JAIME 标题专用，拉丁子集 12KB */
+    @font-face {
+      font-family: 'Anton';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('assets/fonts/anton-latin-400.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    /* Montserrat（Google Fonts，OFL 免费）本地化：侧栏竖排专用，几何无衬线 16KB */
+    @font-face {
+      font-family: 'Montserrat';
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url('assets/fonts/montserrat-latin-500.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { overscroll-behavior: none; overflow-x: clip; } /* 裁掉横向溢出：扇形卡/blog 负 margin 在侧栏展开时会撑宽文档，横向拉动露出右侧黑条 */
     body { margin: 0; background: #0b0d10; }
@@ -404,9 +422,11 @@
     #site .sidebar {
       border-radius: 0 40px 40px 0;
       background: transparent;
-      box-shadow: 16px 0 48px rgba(31, 42, 55, 0.10);
+      /* 投影调轻加宽（0.10→0.055, 48→56px）：原投影在玻璃右缘压暗云团，
+         形成"白光突然变小"的断点（用户圈图抓到，像素剖面证实） */
+      box-shadow: 16px 0 56px rgba(31, 42, 55, 0.055);
     }
-    [data-theme="dark"] #site .sidebar { box-shadow: 16px 0 48px rgba(0, 0, 0, 0.40); }
+    [data-theme="dark"] #site .sidebar { box-shadow: 16px 0 56px rgba(0, 0, 0, 0.25); }
     #site .side-glass {
       position: absolute;
       inset: 0;
@@ -419,15 +439,17 @@
       backdrop-filter: saturate(1.7);
       -webkit-backdrop-filter: saturate(1.7);
     }
-    /* 基底薄染近乎为零：保持全透明，只留一丝主题色相 */
+    /* 基底薄染近乎为零：保持全透明，只留一丝主题色相 + 顶部一层天空光（水润顶光） */
     [data-theme="light"] #site .side-glass {
-      background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(220, 233, 244, 0.03));
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 20%),
+                  linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(220, 233, 244, 0.03));
     }
     [data-theme="dark"] #site .side-glass {
-      background: linear-gradient(160deg, rgba(150, 175, 205, 0.06), rgba(110, 110, 108, 0.03));
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 18%),
+                  linear-gradient(160deg, rgba(150, 175, 205, 0.06), rgba(110, 110, 108, 0.03));
     }
-    /* 边缘高光带：外圈 22px 环带（mask 挖出）+ 高光描边 + 右缘全高连续微发光（细亮芯+宽晕影）——
-       只有细亮线时中段会被亮背景吃掉形成"断点"（被用户抓到过一次）；
+    /* 边缘光（重构）：四边统一 1.2px 亮描边 + 软光晕（所有边缘光效均匀），
+       顶部受光高光 + 底部微阴影 = 微微立体；右缘连续微发光保留（验收过的）；
        不再叠第二个 url() 折射（与基底折射重复计算，省一次全幅滤镜） */
     #site .side-glass::before {
       content: "";
@@ -442,24 +464,28 @@
     }
     [data-theme="light"] #site .side-glass::before {
       box-shadow: inset 0 0 0 1.2px rgba(255, 255, 255, 0.75),
-                  inset 0 -18px 32px rgba(255, 255, 255, 0.14),
-                  inset 0 18px 32px rgba(58, 127, 174, 0.05),
+                  inset 0 2px 4px rgba(255, 255, 255, 0.65),
+                  inset 0 -3px 8px rgba(58, 127, 174, 0.10),
                   inset -2px 0 6px rgba(255, 255, 255, 0.5),
-                  inset -8px 0 20px rgba(255, 255, 255, 0.22);
+                  inset -8px 0 20px rgba(255, 255, 255, 0.22),
+                  inset 2px 0 6px rgba(255, 255, 255, 0.25);
     }
     [data-theme="dark"] #site .side-glass::before {
       box-shadow: inset 0 0 0 1.2px rgba(255, 255, 255, 0.45),
-                  inset 0 -18px 32px rgba(123, 180, 224, 0.10),
+                  inset 0 2px 4px rgba(255, 255, 255, 0.35),
+                  inset 0 -3px 8px rgba(0, 0, 0, 0.20),
                   inset -2px 0 6px rgba(255, 255, 255, 0.38),
-                  inset -8px 0 20px rgba(255, 255, 255, 0.16);
+                  inset -8px 0 20px rgba(255, 255, 255, 0.16),
+                  inset 2px 0 6px rgba(255, 255, 255, 0.12);
     }
-    /* 流光：斜向微光缓慢漂移（液态感），深色压暗 */
+    /* 流光：斜向亮带缓慢漂移 + 太阳高光点（水润光泽关键），深色压暗 */
     #site .side-glass::after {
       content: "";
       position: absolute;
       inset: -20%;
       border-radius: inherit;
-      background: linear-gradient(115deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.04) 28%, transparent 50%);
+      background: radial-gradient(ellipse 24% 32% at 28% 16%, rgba(255, 255, 255, 0.30), transparent 70%),
+                  linear-gradient(115deg, transparent 10%, rgba(255, 255, 255, 0.14) 30%, rgba(255, 255, 255, 0.5) 48%, rgba(255, 255, 255, 0.14) 66%, transparent 88%);
       animation: side-sheen 16s ease-in-out infinite;
     }
     [data-theme="dark"] #site .side-glass::after { opacity: 0.35; }
@@ -503,50 +529,67 @@
       top: 0;
       left: -0.03em;
       margin: 0;
+      font-family: "Anton", "Bebas Neue", "Arial Narrow", sans-serif;
       font-size: clamp(7rem, 11vw, 13rem);
-      font-weight: 900;
-      letter-spacing: 0.16em;
+      font-weight: 400; /* Anton 本身即是粗展示体，900 会触发合成加粗糊边 */
+      letter-spacing: 0.208em; /* 0.16em × 1.3（用户点名扩大 30%） */
       line-height: 0.9;
       white-space: nowrap;
       z-index: 2;
     }
     #site .side-photo {
       position: absolute;
+      z-index: 1;
       top: 20vh;
       left: 1.6%;
       width: 42%;
       aspect-ratio: 3/4;
       border-radius: 14px;
-      background: linear-gradient(135deg, #b8d2e8 0%, #dce9f4 60%, #eef5fb 100%);
-      box-shadow: 0 12px 32px rgba(58, 127, 174, 0.18);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: rgba(58, 127, 174, 0.45);
-      font: 600 0.8rem/1 ui-sans-serif, system-ui, sans-serif;
-      letter-spacing: 0.3em;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 12px 32px rgba(58, 127, 174, 0.18),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                  inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+      /* 只羽化下缘融入球体背景区，其余三边硬切；羽化区高 44%（用户点名在 22% 基础上抬高一倍） */
+      -webkit-mask-image: linear-gradient(to bottom, black 56%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 56%, transparent 100%);
     }
-    #site .side-photo::after { content: "PHOTO"; }
+    #site .side-photo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* 冷调统一：绿色偏青、橙色偏粉紫、阴影带蓝——蓝天本就近 #dce9f4，别过度 */
+      filter: hue-rotate(-8deg) saturate(0.88) brightness(1.02);
+    }
+    /* 蓝紫渐变薄层：把照片色相绑到球体色系 */
+    #site .side-photo::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, rgba(125, 180, 224, 0.12), rgba(179, 158, 238, 0.10));
+      pointer-events: none;
+    }
     [data-theme="dark"] #site .side-photo {
-      background: linear-gradient(135deg, #4a5563 0%, #6e6e6c 60%, #8a8a88 100%);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-      color: rgba(236, 231, 223, 0.45);
+      border-color: rgba(255, 255, 255, 0.22);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.18),
+                  inset 0 -1px 0 rgba(255, 255, 255, 0.03);
     }
-    /* CREATIVE DEVELOPER 竖排：紧贴照片右缘，朝左；字体颜色与右缘竖排一致 */
+    /* 竖排标语：紧贴照片右缘，朝左；字体颜色与右缘竖排一致 */
     #site .side-title {
       position: absolute;
-      left: calc(43.6% + 0.4rem);
-      top: 20vh;
+      left: calc(43.6% + 1px); /* 用户点名间距缩到 1px */
+      top: 24vh; /* 用户点名向下移一点（原 20vh） */
       margin: 0;
       writing-mode: vertical-lr;
-      font-family: "Arial Narrow", "Helvetica Neue Condensed", "PingFang SC", sans-serif;
-      font-stretch: condensed;
+      word-spacing: 0.6em; /* 竖排下沿纵轴拉开两个单词间距（用户点名） */
+      font-family: "Montserrat", "Helvetica Neue", "PingFang SC", sans-serif; /* 用户圈图指定几何无衬线 */
       font-size: 0.75rem;
-      font-weight: 400;
+      font-weight: 500;
       letter-spacing: 0.3em;
       white-space: nowrap;
       color: var(--fg);
-      text-transform: uppercase;
     }
     #site .side-bio {
       position: absolute;
@@ -732,37 +775,28 @@
     }
     [data-theme="dark"] #site .bubble { opacity: 0.7; }
     @keyframes bubble-float {
-      0%   { transform: translateY(0) scale(1, 1); }
-      25%  { transform: translateY(-18px) scale(1.02, 0.99); }
-      50%  { transform: translateY(-7px) scale(0.99, 1.01); }
-      75%  { transform: translateY(-22px) scale(1.01, 0.985); }
+      0%   { transform: translateY(0) scale(1, 1); animation-timing-function: ease-in-out; }
+      25%  { transform: translateY(-18px) scale(1.02, 0.99); animation-timing-function: ease-in-out; }
+      50%  { transform: translateY(-7px) scale(0.99, 1.01); animation-timing-function: ease-in-out; }
+      75%  { transform: translateY(-22px) scale(1.01, 0.985); animation-timing-function: ease-in-out; }
       100% { transform: translateY(0) scale(1, 1); }
     }
     /* 高光立体球（柔亮斑 + 饱和核 + 7 停平滑长尾光晕到 100%）：清晰层球体自身不模糊；
        亮斑 alpha 别超 0.55——太强会漂白中心、和外围色环形成"断点"（被用户抓到过一次）；
        布点按视口百分比，蓝/丁香紫为主，b5 一点暖色点缀；
        b7-b9 布在侧栏玻璃可视条带（照片右侧），保证玻璃覆盖区有清晰球体 */
-    #site .bubble.b1 { width: 420px; height: 420px; top: -6%; left: 52%; animation-duration: 22s;
+    #site .bubble.b1 { width: 420px; height: 420px; top: -6%; left: 43%; animation-duration: 22s;
       background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
                   radial-gradient(circle, rgba(96, 165, 224, 0.95), rgba(125, 180, 224, 0.82) 20%, rgba(125, 180, 224, 0.6) 35%, rgba(125, 180, 224, 0.38) 50%, rgba(125, 180, 224, 0.2) 65%, rgba(125, 180, 224, 0.08) 80%, rgba(125, 180, 224, 0) 100%); }
     #site .bubble.b2 { width: 300px; height: 300px; top: 10%; left: 84%; animation-duration: 19s;
       background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
                   radial-gradient(circle, rgba(158, 132, 235, 0.9), rgba(179, 158, 238, 0.78) 20%, rgba(179, 158, 238, 0.56) 35%, rgba(179, 158, 238, 0.35) 50%, rgba(179, 158, 238, 0.18) 65%, rgba(179, 158, 238, 0.07) 80%, rgba(179, 158, 238, 0) 100%); }
-    #site .bubble.b3 { width: 210px; height: 210px; top: 36%; left: 68%; animation-duration: 14s;
-      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
-                  radial-gradient(circle, rgba(126, 186, 240, 0.9), rgba(150, 198, 240, 0.78) 20%, rgba(150, 198, 240, 0.56) 35%, rgba(150, 198, 240, 0.35) 50%, rgba(150, 198, 240, 0.18) 65%, rgba(150, 198, 240, 0.07) 80%, rgba(150, 198, 240, 0) 100%); }
     #site .bubble.b4 { width: 350px; height: 350px; top: 46%; left: 6%;  animation-duration: 24s;
       background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
                   radial-gradient(circle, rgba(120, 145, 235, 0.9), rgba(141, 163, 235, 0.78) 20%, rgba(141, 163, 235, 0.56) 35%, rgba(141, 163, 235, 0.35) 50%, rgba(141, 163, 235, 0.18) 65%, rgba(141, 163, 235, 0.07) 80%, rgba(141, 163, 235, 0) 100%); }
-    #site .bubble.b5 { width: 175px; height: 175px; top: 70%; left: 80%; animation-duration: 12s;
-      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
-                  radial-gradient(circle, rgba(244, 186, 120, 0.85), rgba(244, 196, 150, 0.72) 20%, rgba(244, 196, 150, 0.52) 35%, rgba(244, 196, 150, 0.32) 50%, rgba(244, 196, 150, 0.17) 65%, rgba(244, 196, 150, 0.07) 80%, rgba(244, 196, 150, 0) 100%); }
     #site .bubble.b6 { width: 140px; height: 140px; top: 80%; left: 15%; animation-duration: 16s;
       background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
                   radial-gradient(circle, rgba(178, 158, 240, 0.9), rgba(198, 182, 245, 0.78) 20%, rgba(198, 182, 245, 0.56) 35%, rgba(198, 182, 245, 0.35) 50%, rgba(198, 182, 245, 0.18) 65%, rgba(198, 182, 245, 0.07) 80%, rgba(198, 182, 245, 0) 100%); }
-    #site .bubble.b7 { width: 300px; height: 300px; top: 20%; left: 52%; animation-duration: 18s;
-      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
-                  radial-gradient(circle, rgba(126, 186, 240, 0.9), rgba(150, 198, 240, 0.78) 20%, rgba(150, 198, 240, 0.56) 35%, rgba(150, 198, 240, 0.35) 50%, rgba(150, 198, 240, 0.18) 65%, rgba(150, 198, 240, 0.07) 80%, rgba(150, 198, 240, 0) 100%); }
     #site .bubble.b8 { width: 260px; height: 260px; top: 46%; left: 56%; animation-duration: 21s;
       background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 22%),
                   radial-gradient(circle, rgba(158, 132, 235, 0.9), rgba(179, 158, 238, 0.78) 20%, rgba(179, 158, 238, 0.56) 35%, rgba(179, 158, 238, 0.35) 50%, rgba(179, 158, 238, 0.18) 65%, rgba(179, 158, 238, 0.07) 80%, rgba(179, 158, 238, 0) 100%); }
@@ -782,11 +816,8 @@
     }
     #site .fx-bubbles.blurred .bubble.b1 { filter: blur(64px); }
     #site .fx-bubbles.blurred .bubble.b2 { filter: blur(52px); }
-    #site .fx-bubbles.blurred .bubble.b3 { filter: blur(40px); }
     #site .fx-bubbles.blurred .bubble.b4 { filter: blur(56px); }
-    #site .fx-bubbles.blurred .bubble.b5 { filter: blur(36px); }
     #site .fx-bubbles.blurred .bubble.b6 { filter: blur(32px); }
-    #site .fx-bubbles.blurred .bubble.b7 { filter: blur(48px); }
     #site .fx-bubbles.blurred .bubble.b8 { filter: blur(44px); }
     #site .fx-bubbles.blurred .bubble.b9 { filter: blur(36px); }
 
@@ -795,16 +826,10 @@
                   radial-gradient(circle, rgba(74, 124, 178, 0.85), rgba(82, 132, 186, 0.72) 20%, rgba(82, 132, 186, 0.52) 35%, rgba(82, 132, 186, 0.32) 50%, rgba(82, 132, 186, 0.17) 65%, rgba(82, 132, 186, 0.07) 80%, rgba(82, 132, 186, 0) 100%); }
     [data-theme="dark"] #site .bubble.b2 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
                   radial-gradient(circle, rgba(122, 96, 190, 0.8), rgba(134, 108, 202, 0.68) 20%, rgba(134, 108, 202, 0.48) 35%, rgba(134, 108, 202, 0.3) 50%, rgba(134, 108, 202, 0.16) 65%, rgba(134, 108, 202, 0.06) 80%, rgba(134, 108, 202, 0) 100%); }
-    [data-theme="dark"] #site .bubble.b3 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
-                  radial-gradient(circle, rgba(88, 140, 196, 0.8), rgba(96, 148, 204, 0.68) 20%, rgba(96, 148, 204, 0.48) 35%, rgba(96, 148, 204, 0.3) 50%, rgba(96, 148, 204, 0.16) 65%, rgba(96, 148, 204, 0.06) 80%, rgba(96, 148, 204, 0) 100%); }
     [data-theme="dark"] #site .bubble.b4 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
                   radial-gradient(circle, rgba(94, 112, 186, 0.8), rgba(102, 120, 198, 0.68) 20%, rgba(102, 120, 198, 0.48) 35%, rgba(102, 120, 198, 0.3) 50%, rgba(102, 120, 198, 0.16) 65%, rgba(102, 120, 198, 0.06) 80%, rgba(102, 120, 198, 0) 100%); }
-    [data-theme="dark"] #site .bubble.b5 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
-                  radial-gradient(circle, rgba(206, 142, 74, 0.6), rgba(216, 150, 82, 0.5) 20%, rgba(216, 150, 82, 0.36) 35%, rgba(216, 150, 82, 0.22) 50%, rgba(216, 150, 82, 0.12) 65%, rgba(216, 150, 82, 0.05) 80%, rgba(216, 150, 82, 0) 100%); }
     [data-theme="dark"] #site .bubble.b6 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
                   radial-gradient(circle, rgba(146, 126, 206, 0.8), rgba(156, 136, 216, 0.68) 20%, rgba(156, 136, 216, 0.48) 35%, rgba(156, 136, 216, 0.3) 50%, rgba(156, 136, 216, 0.16) 65%, rgba(156, 136, 216, 0.06) 80%, rgba(156, 136, 216, 0) 100%); }
-    [data-theme="dark"] #site .bubble.b7 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
-                  radial-gradient(circle, rgba(88, 140, 196, 0.8), rgba(96, 148, 204, 0.68) 20%, rgba(96, 148, 204, 0.48) 35%, rgba(96, 148, 204, 0.3) 50%, rgba(96, 148, 204, 0.16) 65%, rgba(96, 148, 204, 0.06) 80%, rgba(96, 148, 204, 0) 100%); }
     [data-theme="dark"] #site .bubble.b8 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
                   radial-gradient(circle, rgba(122, 96, 190, 0.8), rgba(134, 108, 202, 0.68) 20%, rgba(134, 108, 202, 0.48) 35%, rgba(134, 108, 202, 0.3) 50%, rgba(134, 108, 202, 0.16) 65%, rgba(134, 108, 202, 0.06) 80%, rgba(134, 108, 202, 0) 100%); }
     [data-theme="dark"] #site .bubble.b9 { background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 22%),
@@ -1004,6 +1029,20 @@
       transition: opacity 0.6s ease;
     }
     body.hero-gone #site .fx-dots { opacity: 1; }
+    /* WebGL 液态水波折射背景层（fx-gl.js）：固定视口，进入正文后淡入（与 fx-bubbles 同节律）；
+       WebGL 就绪时（body.gl-ok）隐藏 CSS 背景层（.fx-bg/.fx-bubbles），不可用时自动回退 */
+    #site #fx-gl {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    body.hero-gone #site #fx-gl { opacity: 1; }
+    body.gl-ok #site .fx-bg, body.gl-ok #site .fx-bubbles { display: none; }
     #site .dot {
       position: absolute;
       width: 3px;
@@ -1036,15 +1075,14 @@
   <div class="fx-bg" aria-hidden="true">
     <div class="fx-gradient"></div>
   </div>
+  <!-- WebGL 液态水波折射背景层（fx-gl.js）；CSS 双层保留作回退兜底 -->
+  <canvas id="fx-gl" aria-hidden="true"></canvas>
   <!-- 气泡层（清晰层）：固定视口不随滚动，进入正文后淡入；mask 只留侧栏覆盖区 -->
   <div class="fx-bubbles" aria-hidden="true">
     <i class="bubble b1"></i>
     <i class="bubble b2"></i>
-    <i class="bubble b3"></i>
     <i class="bubble b4"></i>
-    <i class="bubble b5"></i>
     <i class="bubble b6"></i>
-    <i class="bubble b7"></i>
     <i class="bubble b8"></i>
     <i class="bubble b9"></i>
   </div>
@@ -1052,11 +1090,8 @@
   <div class="fx-bubbles blurred" aria-hidden="true">
     <i class="bubble b1"></i>
     <i class="bubble b2"></i>
-    <i class="bubble b3"></i>
     <i class="bubble b4"></i>
-    <i class="bubble b5"></i>
     <i class="bubble b6"></i>
-    <i class="bubble b7"></i>
     <i class="bubble b8"></i>
     <i class="bubble b9"></i>
   </div>
@@ -1098,10 +1133,9 @@
       <div class="side-glass" aria-hidden="true"></div>
       <div class="side-corners" aria-hidden="true"></div>
       <div class="side-inner">
-        <h1 class="side-name">JAIME</h1>
-        <div class="side-photo"></div>
-        <h2 class="side-title">CREATIVE DEVELOPER</h2>
-        <p class="side-bio">这里是一小段个人简介占位文字，用来预览排版与动效。正式内容接入前，这些文字和照片都只是占位。</p>
+        <h1 class="side-name">JAIME GU</h1>
+        <div class="side-photo"><img src="assets/photo.jpg" alt="Jaime 照片"></div>
+        <h2 class="side-title">Be Creative | Be Real | Be Faithful | With Taste</h2>
         <div class="side-vertical">About Myself</div>
       </div>
     </aside>
@@ -1110,12 +1144,8 @@
     <main>
       <h1 class="hero-title">Hi, there! 👋</h1>
       <p class="intro">
-        I'm <b>Jaime</b>, a software engineer who loves building delightful things for the web.
-        I care about clean interfaces, fast tools, and the small details that make software feel crafted.
-      </p>
-      <p class="intro">
-        One thread runs through it all — I love building. When I'm not writing code,
-        I'm probably reading, taking photos, or exploring a new city on foot.
+        Hi, I'm <b>Jaime</b> (谷仲禹), currently student at Zhejiang University and intern at Moonshot AI,
+        chasing the belief that with enough curiosity and conviction, any idea can be brought to life.
       </p>
 
       <!-- Works -->
@@ -1308,7 +1338,8 @@
     <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
   </button>
   </div>
-  <script src="main.js"></script>
+  <script src="main.js?v=20260910zb"></script>
+  <script src="fx-gl.js?v=20260910x"></script>
   <script>
 // 主题切换
     document.querySelectorAll("[data-theme-toggle]").forEach(function (btn) {
