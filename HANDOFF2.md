@@ -12,7 +12,7 @@
 - 线上地址（GitHub Pages）：https://jaime-gu.github.io/portfolio-hero/
 - 本地预览：`cd portfolio-hero && python3 -m http.server 8931` → http://localhost:8931
   - **必须走 http 服务**，file:// 打开时 Chrome 会拦截 WebGL 纹理加载
-- **部署状态**：线上已部署到 `d25f523`（2026-09-10，含阴影缩 1/3、About Myself 换 Bebas Neue+翻转、阶段式收拢、hover 去深色描边、气泡→彩色模糊团、Friends→Contact 分栏玻璃面板、扇形卡迁入 Projects 并放大调平间距）。工作区有**未提交改动**（左栏苹果级液态玻璃，待办 3）——下一轮用户说"上线"时先推这批
+- **部署状态**：线上已部署到 `585579f`（2026-09-10，含左栏苹果级液态玻璃及此前全部改动）。本地完整备份（含 .git，停在 `585579f`）：`/Users/user/Kimi Code/portfolio-hero-backup-20260910/`，供用户探索实验性玩法。工作区干净（仅本文档在此之后有笔记更新）
 
 ## 2. 文件结构
 

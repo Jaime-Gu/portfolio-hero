@@ -21,7 +21,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { overscroll-behavior: none; }
+    html, body { overscroll-behavior: none; overflow-x: clip; } /* 裁掉横向溢出：扇形卡/blog 负 margin 在侧栏展开时会撑宽文档，横向拉动露出右侧黑条 */
     body { margin: 0; background: #0b0d10; }
     .hero {
       position: relative;
