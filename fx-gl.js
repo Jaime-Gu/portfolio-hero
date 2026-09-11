@@ -156,8 +156,9 @@
           float trail = min(spd * 16.0, size * 0.25); // 拖影长 px（用户从 8.3× 回调加强：右区要可见动感）
           float perpW = min(trail * 0.25, 6.0);        // 垂直方向固定微散（保持方向性）
           float sum = 0.0, wsum = 0.0;
-          for (int k = 0; k < 7; k++) {
-            float fk = float(k) / 3.0 - 1.0;         // -1..1 沿运动方向
+          // 5×3 taps（原 7×3，权重重归一视觉无差）：拖尾核成本 -29%
+          for (int k = 0; k < 5; k++) {
+            float fk = float(k) / 2.0 - 1.0;         // -1..1 沿运动方向
             for (int q = 0; q < 3; q++) {
               float fq = float(q) - 1.0;             // -1..1 垂直方向
               vec2 off = vdir * (fk * trail) + vperp * (fq * perpW);
@@ -170,6 +171,9 @@
           }
           aBlur = mix(aBlur, sum / wsum, blurZone);
         }
+        // 深色：雾化分量靠近玻璃右缘渐暗（用户圈图抓到亮条宽度被云团顶得不均；
+        // 只压 aBlur 不动 aSharp，清晰区球体观感不变；浅色 uTheme=0 不生效）
+        aBlur *= mix(1.0, 0.55 + 0.45 * smoothstep(uSbw - 40.0, uSbw + 200.0, css.x), uTheme);
         // 雾化区 alpha 略增（+12%）：补拖影核归一化造成的峰值损失，提升雾团色彩存在；
         // 亮度：深色 ×0.25（两次"再暗 50%"累计）、浅色 ×0.5（用户点名"当前亮度降低50%"）
         float a = mix(aSharp, aBlur, blurZone) * uCoreA[i] * elemA * (1.0 + blurZone * 0.12)
@@ -209,24 +213,25 @@
     precision highp float;
     uniform sampler2D uTex;   // 输入纹理（H pass=A；V+合成 pass=B）
     uniform sampler2D uTexA;  // 原始场景（合成 pass 左区清晰源）
-    uniform vec2 uRes;      // CSS px
+    uniform vec2 uRes;      // 渲染目标尺寸（设备 px）
+    uniform vec2 uSrcRes;   // 源纹理尺寸（设备 px；半分辨率模糊目标下与 uRes 不同）
     uniform float uDpr;
-    uniform vec2 uStep;     // 采样步长向量（设备 px，含方向）
+    uniform vec2 uStep;     // 采样步长向量（源纹理设备 px，含方向）
     uniform float uSbw;
     uniform float uComposite; // 0 = 纯模糊写回；1 = 模糊 + 分区合成
     void main() {
-      vec2 texel = 1.0 / (uRes * uDpr);
-      vec2 uv = gl_FragCoord.xy * texel;
+      vec2 uv = gl_FragCoord.xy / uRes;
+      vec2 srcTexel = 1.0 / uSrcRes;
       // 9-tap 二项式权重 [1,8,28,56,70,56,28,8,1]/256，步长 10 CSS px → 有效 σ≈14px
       vec3 c = texture2D(uTex, uv).rgb * 0.273438;
-      c += texture2D(uTex, uv + uStep * texel).rgb * 0.21875;
-      c += texture2D(uTex, uv - uStep * texel).rgb * 0.21875;
-      c += texture2D(uTex, uv + uStep * texel * 2.0).rgb * 0.109375;
-      c += texture2D(uTex, uv - uStep * texel * 2.0).rgb * 0.109375;
-      c += texture2D(uTex, uv + uStep * texel * 3.0).rgb * 0.03125;
-      c += texture2D(uTex, uv - uStep * texel * 3.0).rgb * 0.03125;
-      c += texture2D(uTex, uv + uStep * texel * 4.0).rgb * 0.00390625;
-      c += texture2D(uTex, uv - uStep * texel * 4.0).rgb * 0.00390625;
+      c += texture2D(uTex, uv + uStep * srcTexel).rgb * 0.21875;
+      c += texture2D(uTex, uv - uStep * srcTexel).rgb * 0.21875;
+      c += texture2D(uTex, uv + uStep * srcTexel * 2.0).rgb * 0.109375;
+      c += texture2D(uTex, uv - uStep * srcTexel * 2.0).rgb * 0.109375;
+      c += texture2D(uTex, uv + uStep * srcTexel * 3.0).rgb * 0.03125;
+      c += texture2D(uTex, uv - uStep * srcTexel * 3.0).rgb * 0.03125;
+      c += texture2D(uTex, uv + uStep * srcTexel * 4.0).rgb * 0.00390625;
+      c += texture2D(uTex, uv - uStep * srcTexel * 4.0).rgb * 0.00390625;
       if (uComposite < 0.5) { gl_FragColor = vec4(c, 1.0); return; }
       vec2 css = gl_FragCoord.xy / uDpr;
       float blurZone = smoothstep(uSbw - 40.0, uSbw + 40.0, css.x); // 边界递增（教训）
@@ -274,14 +279,14 @@
   for (const n of ['uRes', 'uDpr', 'uTime', 'uSbw', 'uTheme', 'uScroll', 'uBg', 'uPos', 'uCore', 'uHalo', 'uCoreA'])
     U[n] = gl.getUniformLocation(progScene, n);
   const B = {};
-  for (const n of ['uTex', 'uTexA', 'uRes', 'uDpr', 'uStep', 'uSbw', 'uComposite'])
+  for (const n of ['uTex', 'uTexA', 'uRes', 'uSrcRes', 'uDpr', 'uStep', 'uSbw', 'uComposite'])
     B[n] = gl.getUniformLocation(progBlur, n);
 
   // 6 球配置（与 CSS 布点/时长一致；已删 b3/b5/b7——右区叠放太密被用户点名）：[left%, top%, size px, dur s]
   const POS = [
     [0.43, -0.06, 420, 22], [0.84, 0.10, 300, 19],
     [0.06, 0.46, 350, 24], [0.15, 0.80, 140, 16],
-    [0.56, 0.46, 260, 21], [0.49, 0.74, 200, 13],
+    [0.52, 0.46, 260, 21], [0.49, 0.74, 200, 13],
   ];
   const LIGHT = {
     core: [[96, 165, 224], [158, 132, 235], [120, 145, 235], [178, 158, 240], [158, 132, 235], [96, 165, 224]],
@@ -325,7 +330,7 @@
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    return { tex, fbo };
+    return { tex, fbo, w, h };
   };
   let targetA = null, targetB = null;
   const resize = () => {
@@ -337,7 +342,8 @@
       gl.deleteTexture(targetB.tex); gl.deleteFramebuffer(targetB.fbo);
     }
     targetA = makeTarget(canvas.width, canvas.height);
-    targetB = makeTarget(canvas.width, canvas.height);
+    // 模糊中间目标半分辨率：模糊 pass 成本 ÷4，柔雾内容上采样后视觉无差
+    targetB = makeTarget(Math.max(1, canvas.width >> 1), Math.max(1, canvas.height >> 1));
   };
   resize();
   window.addEventListener('resize', resize);
@@ -347,10 +353,13 @@
 
   const sbwEl = document.documentElement;
   let t0 = performance.now();
+  let lastRender = 0;
   const frame = (now) => {
     requestAnimationFrame(frame);
     if (document.hidden) return;
     if (!document.body.classList.contains('hero-gone')) return; // hero 阶段不渲染（opacity 0 且省 GPU）
+    if (now - lastRender < 1000 / 60) return; // 60fps 封顶：120Hz 屏 GPU 预算减半（慢动柔雾视觉无差）
+    lastRender = now;
     const d = DPR();
     const W = canvas.width, H = canvas.height;
     const sbw = parseFloat(sbwEl.style.getPropertyValue('--sbw')) || 0;
@@ -367,20 +376,21 @@
     gl.uniform1f(U.uScroll, window.scrollY || 0);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-    // pass 2：水平高斯 A → B（整幅右区画面模糊，用户点名）
+    // pass 2：水平高斯 A → B（整幅右区画面模糊，用户点名；B 半分辨率）
     gl.bindFramebuffer(gl.FRAMEBUFFER, targetB.fbo);
-    gl.viewport(0, 0, W, H);
+    gl.viewport(0, 0, targetB.w, targetB.h);
     gl.useProgram(progBlur);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, targetA.tex);
     gl.uniform1i(B.uTex, 0);
-    gl.uniform2f(B.uRes, W / d, H / d);
+    gl.uniform2f(B.uRes, targetB.w, targetB.h);
+    gl.uniform2f(B.uSrcRes, W, H);
     gl.uniform1f(B.uDpr, d);
     gl.uniform2f(B.uStep, 10 * d, 0);
     gl.uniform1f(B.uComposite, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-    // pass 3：垂直高斯 + 分区合成 → 屏幕（左区取 A 清晰源，右区取模糊）
+    // pass 3：垂直高斯 + 分区合成 → 屏幕（左区取 A 清晰源，右区取半分辨率模糊源）
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, W, H);
     gl.activeTexture(gl.TEXTURE0);
@@ -389,6 +399,8 @@
     gl.bindTexture(gl.TEXTURE_2D, targetA.tex);
     gl.uniform1i(B.uTex, 0);
     gl.uniform1i(B.uTexA, 1);
+    gl.uniform2f(B.uRes, W, H);
+    gl.uniform2f(B.uSrcRes, targetB.w, targetB.h);
     gl.uniform2f(B.uStep, 0, 10 * d);
     gl.uniform1f(B.uComposite, 1);
     gl.uniform1f(B.uSbw, sbwEff);
